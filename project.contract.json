@@ -1,0 +1,28 @@
+{
+    "project_id":  "watchtower",
+    "canonical_name":  "WatchTower",
+    "ecosystem":  {
+                      "registry_schema":  "constellation.service.registry.v1",
+                      "service_id":  "watchtower",
+                      "layer":  "evidence.telemetry-verification",
+                      "role":  "Deterministic verifier and telemetry receipt authority.",
+                      "standalone_first":  true,
+                      "upstream_services":  [
+                                                "neverlost"
+                                            ],
+                      "downstream_users":  [
+                                               "live-state-surgeon"
+                                           ],
+                      "contract_families":  [
+                                                "telemetry",
+                                                "heartbeat",
+                                                "health",
+                                                "policy-attestation",
+                                                "alert",
+                                                "receipt"
+                                            ],
+                      "service_map_path":  "C:\\dev\\Constellation\\ecosystem\\SERVICE_MAP.md",
+                      "registry_path":  "C:\\dev\\Constellation\\registry\\services.json",
+                      "integration_doc_path":  "docs/canonical/ECOSYSTEM_INTEGRATION.md"
+                  }
+}
