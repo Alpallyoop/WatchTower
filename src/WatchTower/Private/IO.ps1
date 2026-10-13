@@ -58,8 +58,25 @@ function Write-WtBytes {
     $stream = New-Object System.IO.FileStream($temp, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
     try { $stream.Write($Bytes, 0, $Bytes.Length); $stream.Flush($true) } finally { $stream.Dispose() }
     # [NullString]::Value: PowerShell would otherwise pass $null as "" (invalid backup path).
-    if ([System.IO.File]::Exists($full)) { [System.IO.File]::Replace($temp, $full, [System.Management.Automation.Language.NullString]::Value) }
-    else { [System.IO.File]::Move($temp, $full) }
+    Invoke-WtFsRetry {
+        if ([System.IO.File]::Exists($full)) { [System.IO.File]::Replace($temp, $full, [System.Management.Automation.Language.NullString]::Value) }
+        else { [System.IO.File]::Move($temp, $full) }
+    }
+}
+
+function Invoke-WtFsRetry {
+    # Renames and replaces on Windows fail with a sharing violation while another process
+    # (a reader, antivirus, the search indexer, backup) briefly holds the file. Retry a few
+    # times over about three seconds, then let the error through: never silently skip.
+    param([Parameter(Mandatory = $true)][scriptblock]$Operation)
+    $delays = @(25, 50, 100, 200, 400, 800, 800, 800)
+    for ($attempt = 0; ; $attempt++) {
+        try { & $Operation; return }
+        catch [System.IO.IOException], [System.UnauthorizedAccessException] {
+            if ($attempt -ge $delays.Length) { throw }
+            Start-Sleep -Milliseconds $delays[$attempt]
+        }
+    }
 }
 
 function Write-WtText {

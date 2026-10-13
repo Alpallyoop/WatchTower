@@ -44,16 +44,40 @@ function Invoke-WtNative {
     $info.CreateNoWindow = $true
     if ($script:WtHasArgumentList) { foreach ($argument in $ArgumentList) { [void]$info.ArgumentList.Add($argument) } }
     else { $info.Arguments = (@($ArgumentList | ForEach-Object { ConvertTo-WtWindowsArgument $_ }) -join ' ') }
-    $process = [System.Diagnostics.Process]::Start($info)
+    # Windows PowerShell 5.1 (.NET Framework) wraps stdin in a writer that uses the console
+    # input encoding; with code page 65001 that encoding writes a UTF-8 BOM into the stream,
+    # which ssh-keygen -Y verify would hash as part of the message. Use a BOM-free encoding
+    # while the process starts, and refuse to feed a message through a BOM-writing stream.
+    $restoreEncoding = $null
+    if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        try {
+            if ([Console]::InputEncoding.GetPreamble().Length -gt 0) {
+                $restoreEncoding = [Console]::InputEncoding
+                [Console]::InputEncoding = New-Object System.Text.UTF8Encoding($false)
+            }
+        }
+        catch { Write-Verbose 'no console input encoding to adjust' }
+    }
+    try { $process = [System.Diagnostics.Process]::Start($info) }
+    finally { if ($null -ne $restoreEncoding) { try { [Console]::InputEncoding = $restoreEncoding } catch { Write-Verbose 'console encoding not restored' } } }
     try {
         $stdout = $process.StandardOutput.ReadToEndAsync()
         $stderr = $process.StandardError.ReadToEndAsync()
         if ($StdinPath) {
+            if ($process.StandardInput.Encoding.GetPreamble().Length -gt 0) {
+                try { $process.Kill() } catch { Write-Verbose 'process already exited' }
+                throw (New-WtFailure 'NATIVE_STDIN_BOM' 'the console input encoding would prepend a byte-order mark')
+            }
             $bytes = Read-WtBytes $StdinPath
-            $process.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
-            $process.StandardInput.BaseStream.Flush()
+            # A tool may exit before reading all of stdin (for example on a malformed
+            # signature); its exit code decides the outcome, not the broken pipe.
+            try {
+                $process.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
+                $process.StandardInput.BaseStream.Flush()
+            }
+            catch [System.IO.IOException] { Write-Verbose 'stdin closed early by the tool' }
         }
-        $process.StandardInput.Close()
+        try { $process.StandardInput.Close() } catch [System.IO.IOException] { Write-Verbose 'stdin already closed' }
         if (-not $process.WaitForExit($TimeoutMilliseconds)) {
             try { $process.Kill() } catch { Write-Verbose 'process already exited' }
             throw (New-WtFailure 'NATIVE_TIMEOUT' $FilePath)
@@ -137,4 +161,36 @@ function Test-WtSignature {
         '-Y', 'verify', '-f', $AllowedSignersPath, '-I', $Principal, '-n', $Namespace, '-s', $SignaturePath)
     if ($result.ExitCode -ne 0) { return $false }
     return ([string]$result.Stdout).Contains(('Good "{0}" signature for {1} ' -f $Namespace, $Principal))
+}
+
+function Test-WtSshSigSupport {
+    # Proves this host's ssh-keygen can sign and verify SSHSIG (OpenSSH 8.1+): a throwaway
+    # key signs a message, the signature verifies, and a changed message does not. Windows
+    # 10 / Server 2019 ship OpenSSH 7.7, which has no -Y sign/verify.
+    [OutputType([string])]
+    param()
+    $keygen = Get-WtSshKeygenPath
+    $directory = New-WtTempDirectory 'wt_sshsig_probe'
+    try {
+        $key = Join-Path $directory 'probe_ed25519'
+        $message = Join-Path $directory 'message.txt'
+        $signature = Join-Path $directory 'message.txt.sig'
+        $signers = Join-Path $directory 'allowed_signers'
+        try {
+            New-WtSshKey -Path $key -Comment 'watchtower-sshsig-probe'
+            Write-WtText -Path $message -Text 'watchtower sshsig probe'
+            New-WtSignature -KeyPath $key -Namespace 'watchtower/probe' -MessagePath $message -SignaturePath $signature
+        }
+        catch { throw (New-WtFailure 'SSH_KEYGEN_NO_SSHSIG' ('{0}: {1}' -f $keygen, (Get-WtFailureCode $_))) }
+        Write-WtText -Path $signers -Text ('probe namespaces="watchtower/probe" ' + (ConvertTo-WtPublicKey (Read-WtText ($key + '.pub'))))
+        if (-not (Test-WtSignature -AllowedSignersPath $signers -Principal 'probe' -Namespace 'watchtower/probe' -SignaturePath $signature -MessagePath $message)) {
+            throw (New-WtFailure 'SSH_KEYGEN_NO_SSHSIG' ($keygen + ': a valid signature did not verify'))
+        }
+        Write-WtText -Path $message -Text 'watchtower sshsig probe, changed'
+        if (Test-WtSignature -AllowedSignersPath $signers -Principal 'probe' -Namespace 'watchtower/probe' -SignaturePath $signature -MessagePath $message) {
+            throw (New-WtFailure 'SSH_KEYGEN_NO_SSHSIG' ($keygen + ': a changed message verified'))
+        }
+        return $keygen
+    }
+    finally { Remove-WtTree $directory }
 }

@@ -91,9 +91,9 @@ function Invoke-Cpr {
                 "return [System.IO.Path]::GetRelativePath([System.IO.Path]::GetFullPath(`$BasePath),[System.IO.Path]::GetFullPath(`$TargetPath)).Replace('\','/') }")
         }
     }
-    $exe = (Get-Process -Id $PID).Path   # the same PowerShell edition this suite runs under
-    $output = & $exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $script:cprCopy 'scripts/verify_packet_v1.ps1') -RepoRoot $script:cprCopy -PacketPath $PacketPath 2>&1 | Out-String
-    return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $output.Trim() }
+    # The same PowerShell edition this suite runs under.
+    $run = Invoke-WtChildPowerShell -File (Join-Path $script:cprCopy 'scripts/verify_packet_v1.ps1') -Arguments @('-RepoRoot', $script:cprCopy, '-PacketPath', $PacketPath)
+    return [pscustomobject]@{ ExitCode = $run.ExitCode; Output = $run.Output.Trim() }
 }
 function Test-WtWindowsHost { return ([System.IO.Path]::DirectorySeparatorChar -eq '\') }
 $script:cprCopy = ''

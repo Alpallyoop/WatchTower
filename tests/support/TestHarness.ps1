@@ -96,3 +96,21 @@ function Get-WtTreeDigest {
     [Array]::Sort($sorted, [System.StringComparer]::Ordinal)
     return ($sorted -join "`n")
 }
+
+function Invoke-WtChildPowerShell {
+    # Runs a script in a fresh process of the same PowerShell edition and returns its merged
+    # output and exit code. stderr lines are captured as text: on Windows PowerShell 5.1 a
+    # native stderr line under ErrorActionPreference 'Stop' would otherwise abort the caller.
+    param([Parameter(Mandatory = $true)][string]$File, [string[]]$Arguments = @())
+    $exe = (Get-Process -Id $PID).Path
+    $saved = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = & $exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $File @Arguments 2>&1 | ForEach-Object {
+            if ($_ -is [System.Management.Automation.ErrorRecord]) { 'STDERR: ' + $_.Exception.Message } else { [string]$_ }
+        } | Out-String
+        $exitCode = $LASTEXITCODE
+    }
+    finally { $ErrorActionPreference = $saved }
+    return [pscustomobject]@{ ExitCode = $exitCode; Output = $output }
+}

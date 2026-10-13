@@ -8,7 +8,15 @@ $work = New-WtTempDirectory 'wt_core_tests'
 # --- strict JSON ---------------------------------------------------------------------
 Invoke-WtTest 'json: canonical form matches the ecosystem rule (sorted, compact, raw UTF-8)' {
     $value = ConvertFrom-WtJson '{"b":[1,{"z":null,"a":true}],"a":"x\u00e9\n\"q\"","t":"2026-03-12T15:04:00Z"}'
-    Assert-WtEqual '{"a":"xé\n\"q\"","b":[1,{"a":true,"z":null}],"t":"2026-03-12T15:04:00Z"}' (ConvertTo-WtCanonicalJson $value)
+    # [char]0x00E9: sources stay ASCII, because Windows PowerShell 5.1 reads BOM-less files as ANSI.
+    Assert-WtEqual ('{"a":"x' + [char]0x00E9 + '\n\"q\"","b":[1,{"a":true,"z":null}],"t":"2026-03-12T15:04:00Z"}') (ConvertTo-WtCanonicalJson $value)
+}
+Invoke-WtTest 'sources: every v2 PowerShell file is ASCII (Windows PowerShell 5.1 reads BOM-less files as ANSI)' {
+    $roots = @('src', 'bin', 'tests', 'scripts/_RUN_watchtower_canonical_full_green_v2.ps1') | ForEach-Object { Join-Path $repo $_ }
+    foreach ($file in @(Get-ChildItem -LiteralPath $roots -Recurse -File -Include '*.ps1', '*.psm1', '*.psd1' | Where-Object { $_.FullName -notmatch '[\\/](fixtures|unit|integration)[\\/]' })) {
+        $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
+        foreach ($b in $bytes) { if ($b -gt 127) { throw ('non-ASCII byte in ' + $file.FullName) } }
+    }
 }
 Invoke-WtTest 'json: ISO-8601 strings stay strings (no DateTime coercion)' { Assert-WtEqual 'String' (ConvertFrom-WtJson '"2026-03-12T15:04:00Z"').GetType().Name }
 Invoke-WtTest 'json: empty and single-element arrays survive round trips' { Assert-WtEqual '{"a":[],"b":["x"],"c":[[]],"d":{}}' (ConvertTo-WtCanonicalJson (ConvertFrom-WtJson '{"d":{},"c":[[]],"b":["x"],"a":[]}')) }

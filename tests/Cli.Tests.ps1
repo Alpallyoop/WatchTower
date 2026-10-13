@@ -4,7 +4,6 @@
 . (Join-Path $PSScriptRoot 'support/ReferenceProducer.ps1')
 $repo = Get-WtRepoRoot
 $cli = Join-Path $repo 'bin/watchtower.ps1'
-$exe = (Get-Process -Id $PID).Path
 $work = New-WtTempDirectory 'wt_cli_tests'
 $root = Join-Path $work 'node'
 New-WtDirectory $root
@@ -12,9 +11,9 @@ $producerKey = New-ReferenceProducerKey -Directory (Join-Path $work 'keys') -Nam
 
 function Invoke-Cli {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    $output = & $exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $cli @Arguments 2>&1 | Out-String
-    $lines = @($output.Trim() -split "`r?`n")
-    return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $output; Token = $lines[$lines.Count - 1] }
+    $run = Invoke-WtChildPowerShell -File $cli -Arguments $Arguments
+    $lines = @($run.Output.Trim() -split "`r?`n")
+    return [pscustomobject]@{ ExitCode = $run.ExitCode; Output = $run.Output; Token = $lines[$lines.Count - 1] }
 }
 
 function Assert-Cli {

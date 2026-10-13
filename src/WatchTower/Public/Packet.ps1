@@ -152,7 +152,7 @@ function New-WtPacket {
             if (-not $same) { throw (New-WtFailure 'PACKET_EXISTS_DIFFERENT' $packetId) }
             return [pscustomobject]@{ PacketId = $packetId; Path = $final; Created = $false }
         }
-        [System.IO.Directory]::Move($build, $final)
+        Invoke-WtFsRetry { [System.IO.Directory]::Move($build, $final) }
         return [pscustomobject]@{ PacketId = $packetId; Path = $final; Created = $true }
     }
     finally { Remove-WtTree $build }

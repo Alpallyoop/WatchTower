@@ -5,7 +5,7 @@ function Export-WtEvidenceIndex {
     .DESCRIPTION
         A discovery document for operator surfaces such as the Global Workbench WatchTower plugin
         (alert, device and receipt panels): where each ledger lives with its verified count and
-        head, the latest verified documents per device and service, recent outbox packets and the
+        head, the latest verified documents per device and service, the outbox packet count and the
         last ingest record. It never throws on a damaged ledger; the ledger entry carries
         state 'invalid' and the failure code instead, so a broken chain is never shown as healthy.
     #>

@@ -29,6 +29,7 @@ function Invoke-WtDoctor {
         catch { $item['ok'] = $false; $item['code'] = Get-WtFailureCode $_; $item['detail'] = Limit-WtText (Protect-WtDetail -Detail (Get-WtFailureMessage $_) -Roots @($layout.Root)) 512 }
         [void]$checks.Add($item)
     }
+    & $run 'ssh_keygen' { 'SSHSIG sign/verify works: ' + [System.IO.Path]::GetFileName((Test-WtSshSigSupport)) }
     & $run 'settings' { [void](Read-WtSettings $layout); 'valid' }
     & $run 'trust_bundle' { $context.Bundle = Read-WtTrustBundle $layout.TrustBundle; 'valid' }
     & $run 'allowed_signers_derived' {

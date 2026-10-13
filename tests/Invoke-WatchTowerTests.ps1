@@ -53,8 +53,16 @@ $results = New-Object System.Collections.ArrayList
 foreach ($suite in $suites) {
     $script = Join-Path $tests ($suite + '.Tests.ps1')
     $watch = [System.Diagnostics.Stopwatch]::StartNew()
-    $output = & $powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script 2>&1 | Out-String
-    $exitCode = $LASTEXITCODE
+    # stderr is captured as text: on Windows PowerShell 5.1 a child's stderr line would
+    # otherwise abort the runner under ErrorActionPreference 'Stop', losing every diagnostic.
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = & $powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script 2>&1 | ForEach-Object {
+            if ($_ -is [System.Management.Automation.ErrorRecord]) { 'STDERR: ' + $_.Exception.Message } else { [string]$_ }
+        } | Out-String
+        $exitCode = $LASTEXITCODE
+    }
+    finally { $ErrorActionPreference = 'Stop' }
     $watch.Stop()
     $lines = @($output.Trim() -split "`r?`n")
     $final = $lines[$lines.Count - 1]
@@ -93,13 +101,15 @@ if ($interop.Count -gt 0) {
 }
 
 if ($ReportPath) {
+    # RuntimeInformation needs .NET Framework 4.7.1+; older hosts still get a report.
+    $osDescription = try { [System.Runtime.InteropServices.RuntimeInformation]::OSDescription } catch { [Environment]::OSVersion.VersionString }
     $report = [ordered]@{
         schema          = 'watchtower.test_run.v1'
         generated_utc   = (& $module { Get-WtUtcNow })
         scope           = $Scope
         module_version  = $module.Version.ToString()
         powershell      = [ordered]@{ edition = [string]$PSVersionTable.PSEdition; version = $PSVersionTable.PSVersion.ToString() }
-        os              = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
+        os              = $osDescription
         repository_hash = $after
         repo_mutated    = $mutated
         suites          = $results

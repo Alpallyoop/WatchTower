@@ -1,4 +1,4 @@
-# WatchTower — deterministic verifier and telemetry receipt authority.
+# WatchTower - deterministic verifier and telemetry receipt authority.
 # Module loader: private implementation first (fixed order), then the public cmdlets.
 # Exports are declared explicitly in WatchTower.psd1.
 
