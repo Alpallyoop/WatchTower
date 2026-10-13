@@ -98,7 +98,7 @@ switch($cmd0){
 
   "doctor" {
     # Installed bundle: <InstallRoot>\watchtower_cli_v1 next to watchtower.cmd.
-    # From the repository: <RepoRoot>\local\WatchTowerCLI (never %LOCALAPPDATA%).
+    # From the repository: <RepoRoot>\local\WatchTowerCLI (never the Local AppData folder).
     $installRoot = Split-Path -Parent $RepoRoot
     if(-not (Test-Path -LiteralPath (Join-Path $installRoot "watchtower.cmd"))){ $installRoot = Join-Path $RepoRoot "local\WatchTowerCLI" }
     Write-Host "WATCHTOWER_DOCTOR_START"

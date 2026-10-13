@@ -5,7 +5,7 @@
 $ErrorActionPreference="Stop"
 Set-StrictMode -Version Latest
 
-# Project-local paths (was C:\ProgramData): this repository's packets\outbox and the
+# Project-local paths (was ProgramData on C:): this repository's packets\outbox and the
 # sibling NFL checkout's packets\inbox.
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $src = Join-Path (Join-Path $RepoRoot "packets\outbox") $PacketId

@@ -7,7 +7,7 @@ const { spawnSync } = require("child_process");
 const PORT = 43187;
 const HOST = "127.0.0.1";
 
-// Everything lives inside the project (was %LOCALAPPDATA%): <repo>/local/WatchTowerCLI and
+// Everything lives inside the project (formerly the Local AppData folder): <repo>/local/WatchTowerCLI and
 // <repo>/local/WatchTowerInspector, or WATCHTOWER_LOCAL_ROOT when set.
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const LOCAL_ROOT = process.env.WATCHTOWER_LOCAL_ROOT ? path.resolve(process.env.WATCHTOWER_LOCAL_ROOT) : path.join(REPO_ROOT, "local");

@@ -6,7 +6,7 @@ param(
   [string]$ProducerInstance = "watchtower-local-1",
 
   # Empty defaults resolve inside this repository and its sibling NFL checkout
-  # (were C:\dev\watchtower and C:\ProgramData).
+  # (formerly fixed folders on C:).
   [string]$AuthorityKey = "",
   [string]$Principal = "single-tenant/watchtower_authority/authority/watchtower",
   [string]$KeyId = "watchtower-authority-ed25519",

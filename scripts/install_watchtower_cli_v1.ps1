@@ -1,5 +1,5 @@
 param(
-  # Default: <RepoRoot>\local\WatchTowerCLI inside the project (was %LOCALAPPDATA%\WatchTowerCLI).
+  # Default: <RepoRoot>\local\WatchTowerCLI inside the project (formerly the Local AppData folder).
   [string]$InstallRoot = "",
   [string]$RepoRoot = "",
   [switch]$UseLocalRelease,

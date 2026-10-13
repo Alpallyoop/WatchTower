@@ -1,6 +1,6 @@
 param(
   [Parameter(Mandatory=$true)][string]$RepoRoot,
-  # Default: the sibling NFL checkout next to this repository (was C:\dev\nfl\...).
+  # Default: the sibling NFL checkout next to this repository (was a fixed folder on C:).
   [Parameter(Mandatory=$false)][string]$HandoffDir = ""
 )
 if([string]::IsNullOrWhiteSpace($HandoffDir)){

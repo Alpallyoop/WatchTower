@@ -62,7 +62,7 @@ function loadStateCards() {
 }
 
 function loadReceipts() {
-  const root = "C:/dev/watchtower";
+  const root = ".";  // repository-relative
   return [
     {
       name: "watchtower_tier0_freeze.ndjson",
@@ -88,7 +88,7 @@ function loadReceipts() {
 }
 
 function loadFreezeEvidence() {
-  const root = "C:/dev/watchtower/proofs/freeze/watchtower_tier0_v1";
+  const root = "./proofs/freeze/watchtower_tier0_v1";
   return {
     freezeRoot: root,
     manifest: root + "/freeze_manifest.json",
@@ -97,7 +97,7 @@ function loadFreezeEvidence() {
     fullGreenStderr: root + "/full_green.stderr.txt",
     bindingStdout: root + "/device_binding.stdout.txt",
     bindingStderr: root + "/device_binding.stderr.txt",
-    tier0Receipt: "C:/dev/watchtower/proofs/receipts/watchtower_tier0_freeze.ndjson",
+    tier0Receipt: "./proofs/receipts/watchtower_tier0_freeze.ndjson",
   };
 }
 
