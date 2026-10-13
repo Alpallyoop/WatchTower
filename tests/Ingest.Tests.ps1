@@ -108,6 +108,7 @@ Invoke-WtTest 'trust: enroll a producer; identical re-enrollment is a no-op' {
 }
 Invoke-WtTest 'trust: enrollment conflicts, authority impersonation and test keys are refused' {
     Assert-WtThrowsCode 'TRUST_PRODUCER_CONFLICT' { Register-WtProducer -Root $trustRoot -Principal 'lss-reference' -KeyId 'lss-reference-ed25519' -PublicKey (Join-Path $work 'keys/stranger.pub') }
+    Assert-WtThrowsCode 'TRUST_NAMESPACE_NOT_PRODUCER' { Register-WtProducer -Root $trustRoot -Principal 'greedy' -KeyId 'greedy-1' -PublicKey (Join-Path $work 'keys/stranger.pub') -Namespace @('watchtower/packet', 'watchtower') }
     Assert-WtThrowsCode 'TRUST_PRODUCER_IS_AUTHORITY' { Register-WtProducer -Root $trustRoot -Principal 'single-tenant/watchtower_authority/authority/watchtower' -KeyId 'x' -PublicKey (Join-Path $work 'keys/stranger.pub') }
     $testKey = New-ReferenceProducerKey -Directory (Join-Path $work 'keys') -Name 'testonly' -Comment 'TEST_ONLY reference key'
     Assert-WtThrowsCode 'TRUST_TEST_KEY_REFUSED' { Register-WtProducer -Root $trustRoot -Principal 'lab' -KeyId 'lab-1' -PublicKey ($testKey + '.pub') }

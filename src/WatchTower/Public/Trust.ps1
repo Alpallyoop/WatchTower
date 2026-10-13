@@ -73,7 +73,8 @@ function Register-WtProducer {
         Adds principal + key + namespaces. Idempotent for an identical entry; fails if the
         principal/key id is already enrolled with a different key or different namespaces
         (TRUST_PRODUCER_CONFLICT). Keys whose comment marks them as test material
-        (TEST_ONLY) are refused unless -AllowTestKey is given.
+        (TEST_ONLY) are refused unless -AllowTestKey is given. -Namespace defaults to every
+        producer namespace and may only narrow it (TRUST_NAMESPACE_NOT_PRODUCER otherwise).
     #>
     [CmdletBinding()]
     [OutputType([pscustomobject])]
@@ -93,6 +94,10 @@ function Register-WtProducer {
     if (-not $AllowTestKey -and $line -match 'TEST_ONLY') { throw (New-WtFailure 'TRUST_TEST_KEY_REFUSED' $KeyId) }
     $canonicalKey = ConvertTo-WtPublicKey $line
     $namespaces = [string[]]@($Namespace)
+    # A producer may hold only producer namespaces: never WatchTower's own evidence, pledge or
+    # envelope namespaces, and never an empty set.
+    if ($namespaces.Length -eq 0) { throw (New-WtFailure 'TRUST_KEY_NO_NAMESPACES' $KeyId) }
+    foreach ($ns in $namespaces) { if ($script:WtProducerNamespaces -cnotcontains $ns) { throw (New-WtFailure 'TRUST_NAMESPACE_NOT_PRODUCER' $ns) } }
     [Array]::Sort($namespaces, [System.StringComparer]::Ordinal)
 
     $existing = Find-WtTrustKey -Bundle $bundle -Principal $Principal -KeyId $KeyId
