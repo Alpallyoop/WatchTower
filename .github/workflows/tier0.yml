@@ -1,0 +1,82 @@
+name: tier0
+
+# The WatchTower release gate on every supported host:
+#   WATCHTOWER_TIER0_FULL_GREEN_OK suites=6 cases=<n>
+# plus the interop suite. NeverLost is public and checked out at a pinned commit; CPR and
+# live-state-surgeon are not reachable from public CI, so interop reports PARTIAL here
+# (CPR cases skipped, never counted as passes). Run -Scope all locally with sibling
+# checkouts for WATCHTOWER_INTEROP_OK.
+
+on:
+  push:
+    branches: [master, 'finish/**', 'audit/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tier0-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEVERLOST_COMMIT: 1bd6d0e3ed2512643ad241636fd4cc0adeff40c5
+
+jobs:
+  gate:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu / pwsh 7
+            os: ubuntu-latest
+            shell: pwsh
+          - name: windows / pwsh 7
+            os: windows-latest
+            shell: pwsh
+          - name: windows / Windows PowerShell 5.1
+            os: windows-latest
+            shell: powershell
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - name: Check out WatchTower
+        uses: actions/checkout@v4
+        with:
+          path: WatchTower
+
+      - name: Check out NeverLost (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: ScrappyHub/NeverLost
+          ref: ${{ env.NEVERLOST_COMMIT }}
+          path: NeverLost
+
+      - name: Toolchain
+        run: |
+          $PSVersionTable | Format-Table -AutoSize | Out-String | Write-Output
+          $keygen = Get-Command ssh-keygen -ErrorAction SilentlyContinue
+          if (-not $keygen) { throw 'ssh-keygen (OpenSSH) is required' }
+          Write-Output ('ssh-keygen: ' + $keygen.Source)
+
+      - name: Tier-0 gate and interop
+        env:
+          WATCHTOWER_NEVERLOST_ROOT: ${{ github.workspace }}/NeverLost
+        run: |
+          $report = Join-Path $env:RUNNER_TEMP 'watchtower-test-run.json'
+          & ./WatchTower/scripts/_RUN_watchtower_canonical_full_green_v2.ps1 -Scope all -ReportPath $report
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item -LiteralPath $report -Destination ./watchtower-test-run.json
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchtower-test-run-${{ matrix.os }}-${{ matrix.shell }}
+          path: watchtower-test-run.json
+          if-no-files-found: warn
