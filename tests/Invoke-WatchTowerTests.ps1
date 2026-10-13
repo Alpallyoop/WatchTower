@@ -35,13 +35,13 @@ if ($Scope -ne 'interop') { foreach ($s in @('Core', 'Packet', 'Telemetry', 'Ing
 if ($Scope -ne 'standalone') { $suites.Add('Interop') }
 
 function Get-RepositoryDigest {
-    # Every file except .git, .wt-tmp and node_modules, by relative path and content.
+    # Every file except .git, node_modules and the workspace scratch/cache folders (.scratch,
+    # and .work/.cache that the dev-root DEV_SHELL creates), by relative path and content.
     $lines = New-Object System.Collections.Generic.List[string]
     $prefix = $repository.TrimEnd([char[]]@('\', '/')).Length + 1
     foreach ($file in [System.IO.Directory]::EnumerateFiles($repository, '*', [System.IO.SearchOption]::AllDirectories)) {
         $relative = $file.Substring($prefix).Replace('\', '/')
-        # .wt-tmp/ is the project's scratch space (suites create and remove their work there).
-        if ($relative.StartsWith('.git/') -or $relative.StartsWith('.wt-tmp/') -or $relative -match '(^|/)node_modules/') { continue }
+        if ($relative.StartsWith('.git/') -or $relative.StartsWith('.scratch/') -or $relative.StartsWith('.work/') -or $relative.StartsWith('.cache/') -or $relative -match '(^|/)node_modules/') { continue }
         $lines.Add($relative + "`t" + (& $module { param($p) Get-WtSha256 -Path $p } $file))
     }
     $sorted = $lines.ToArray()

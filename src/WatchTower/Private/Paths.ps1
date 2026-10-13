@@ -75,8 +75,9 @@ function ConvertTo-WtPathSegment {
 }
 
 # Scratch space lives inside the project, never in the user profile (%TEMP%, AppData):
-# <repository>/.wt-tmp by default (git-ignored), or WATCHTOWER_TMP when set.
-$script:WtDefaultTempRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, '..', '..', '..', '.wt-tmp'))
+# <repository>/.scratch by default (git-ignored; the dev-root workspace convention), or
+# WATCHTOWER_TMP when set.
+$script:WtDefaultTempRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, '..', '..', '..', '.scratch'))
 
 function Get-WtTempRoot {
     [OutputType([string])]

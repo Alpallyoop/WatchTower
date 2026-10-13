@@ -17,7 +17,7 @@ function WT-Die([string]$m){
 function WT-InvokeCapture([string]$Script,[string[]]$ChildArgs){
   $PSExe = (Get-Command powershell.exe -ErrorAction Stop).Source
   # Scratch stays inside the project (never %TEMP%).
-  $scratch = Join-Path $RepoRoot ".wt-tmp"
+  $scratch = Join-Path $RepoRoot ".scratch"
   if(-not (Test-Path -LiteralPath $scratch -PathType Container)){ New-Item -ItemType Directory -Force -Path $scratch | Out-Null }
   $outFile = Join-Path $scratch ("watchtower_cli_selftest_" + [guid]::NewGuid().ToString("N") + ".txt")
   try {

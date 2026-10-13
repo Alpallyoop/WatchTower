@@ -86,7 +86,7 @@ if([string]::IsNullOrWhiteSpace($InstallRoot)){
 WT-EnsureDir $InstallRoot
 
 # Scratch stays inside the project (never %TEMP%).
-$scratch = Join-Path $RepoRoot ".wt-tmp"
+$scratch = Join-Path $RepoRoot ".scratch"
 WT-EnsureDir $scratch
 $tempZip = Join-Path $scratch "watchtower_cli_v1.zip"
 $tempExtract = Join-Path $scratch "watchtower_cli_v1_extract"

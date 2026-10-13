@@ -30,7 +30,7 @@ function Try-Run([string]$Ps1,[string]$RepoRoot){
   if (-not (Test-Path -LiteralPath $Ps1 -PathType Leaf)) { return $false }
   $psExe = (Get-Command powershell.exe -ErrorAction Stop).Source
   # Scratch stays inside the project (never %TEMP%).
-  $scratch = Join-Path $RepoRoot ".wt-tmp"
+  $scratch = Join-Path $RepoRoot ".scratch"
   if (-not (Test-Path -LiteralPath $scratch -PathType Container)) { New-Item -ItemType Directory -Force -Path $scratch | Out-Null }
   $out = Join-Path $scratch ("wt_tryrun_out_" + [Guid]::NewGuid().ToString("n") + ".txt")
   $err = Join-Path $scratch ("wt_tryrun_err_" + [Guid]::NewGuid().ToString("n") + ".txt")

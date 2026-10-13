@@ -56,7 +56,9 @@ proofs/pledges/
 runtime/
 
 # Project-local scratch space (WatchTower never writes to %TEMP% or AppData)
-.wt-tmp/
+.scratch/
+.work/
+.cache/
 
 # Test reports written with -ReportPath
 watchtower-test-run.json
