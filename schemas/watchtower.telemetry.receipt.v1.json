@@ -143,8 +143,10 @@
         "body",
         "complete",
         "state",
-        "route"
-      ]
+        "route",
+        "record"
+      ],
+      "description": "Verification stage reached. 'record': the packet's own fields could not be recorded, so it was rejected with none of them (RECEIPT_UNRECORDABLE)."
     },
     "signer_verified": {
       "type": "boolean"

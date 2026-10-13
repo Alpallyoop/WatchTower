@@ -310,6 +310,35 @@ Invoke-WtTest 'neverlost: a producer named in NeverLost principal form is enroll
     Assert-WtTrue (Test-WtLedger -Root $root).Valid
 }
 
+# --- hostile inbox input never stops the pipeline -----------------------------------------
+Invoke-WtTest 'dos: a field that truncates inside a surrogate pair is recorded, and the next packet is still processed' {
+    $root = New-StateRoot 'surrogate'
+    $emoji = [char]::ConvertFromUtf32(0x1F600)
+    [void](Add-InboxPacket $root 'a-poison' @{ PacketSignerKey = (Join-Path $work 'keys/stranger'); EventSignerKey = (Join-Path $work 'keys/stranger'); EditManifest = { param($m) $m['payload']['event_type'] = ('a' * 255) + $emoji } })
+    [void](Add-InboxPacket $root 'b-legit' @{ Seq = 1 })
+    $run = Invoke-WtIngest -Root $root -VerificationTime $RUN1
+    Assert-WtEqual 'EVENT_TYPE_UNSUPPORTED,OK' (@($run.Results | ForEach-Object { $_.Code }) -join ',')
+    $rows = Get-ReceiptRows $root
+    Assert-WtTrue ($rows[0]['event_type'].EndsWith('...[truncated]')) 'truncated field'
+    Assert-WtTrue (Test-WtLedger -Root $root).Valid
+}
+Invoke-WtTest 'dos: a named pipe inside a packet is rejected, not read (Unix)' {
+    if ([System.IO.Path]::DirectorySeparatorChar -eq '\') { return }
+    $mkfifo = Get-Command mkfifo -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $mkfifo) { Skip-WtTest 'mkfifo unavailable' }
+    $root = New-StateRoot 'fifo'
+    [void](Add-InboxPacket $root 'a-fifo' @{ Seq = 1; AfterBuild = {
+                param($d)
+                & $mkfifo.Source (Join-Path $d 'payload/pipe')
+                # Listed in sha256sums, so a verifier that reads listed files would block on it.
+                [System.IO.File]::AppendAllText((Join-Path $d 'sha256sums.txt'), ('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  payload/pipe' + "`n"))
+            } })
+    [void](Add-InboxPacket $root 'b-legit' @{ Seq = 2; EventId = 'evt-2' })
+    $run = Invoke-WtIngest -Root $root -VerificationTime $RUN1
+    Assert-WtEqual 'PACKET_SPECIAL_FILE_FORBIDDEN,OK' (@($run.Results | ForEach-Object { $_.Code }) -join ',')
+    Assert-WtTrue (-not [System.IO.File]::Exists((Join-Path $root 'runtime/ingest.lock'))) 'lock left behind'
+}
+
 # --- crash recovery: sealing resumes from the ledgers ----------------------------------------
 Invoke-WtTest 'recovery: receipts appended but never sealed are sealed by the next run' {
     $root = New-StateRoot 'crash-before-seal'
@@ -384,6 +413,14 @@ Invoke-WtTest 'guards: a stale ingest lock, a missing authority key and invalid 
         try { Assert-WtThrowsCode 'SETTINGS_VALUE' { Invoke-WtIngest -Root $root -VerificationTime $RUN1 } }
         finally { Move-Item -LiteralPath (Join-Path $root 'config/good.json') -Destination $settingsPath -Force }
     }
+    $settings = Read-WtJsonFile -Path $settingsPath -Object
+    $twin = Copy-WtJsonValue $settings['service_bindings'][0]
+    $twin['service_id'] = 'Live-State-Surgeon'
+    [void]$settings['service_bindings'].Add($twin)
+    $saved = Read-WtText $settingsPath
+    Write-WtJsonFile -Path $settingsPath -Value $settings
+    try { Assert-WtThrowsCode 'SETTINGS_VALUE' { Invoke-WtIngest -Root $root -VerificationTime $RUN1 } }
+    finally { Write-WtText -Path $settingsPath -Text $saved }
     $settings = Read-WtJsonFile -Path $settingsPath -Object
     $settings['service_binding'] = @()
     $saved = Read-WtText $settingsPath

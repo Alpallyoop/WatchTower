@@ -86,13 +86,44 @@ function Get-WtTelemetryFacts {
     return $facts
 }
 
+function New-WtUnrecordableVerdict {
+    # A rejection that carries no packet-supplied data (used when a packet's own fields
+    # cannot be recorded). Nothing about the sender is claimed, so nothing is attributed.
+    param([Parameter(Mandatory = $true)][string]$Code)
+    return [pscustomobject]@{
+        Valid = $false; Code = $Code; Detail = 'WT_FAIL:' + $Code; Stage = 'record'; SignerVerified = $false
+        PacketId = ''; PacketKind = ''; EventType = ''; EventHash = ''; EventId = ''
+        Producer = ''; ProducerInstance = ''; KeyId = ''; Namespace = ''
+        DeviceId = ''; ProducerTime = ''; Seq = [long]-1; Event = $null
+    }
+}
+
 function Limit-WtText {
-    # Untrusted strings are capped before they enter evidence.
+    # Untrusted strings are capped before they enter evidence. The cut never splits a
+    # surrogate pair, and any unpaired surrogate becomes U+FFFD: evidence is strict UTF-8,
+    # and one malformed string must never be able to abort a whole ingest run.
     [OutputType([string])]
     param([AllowNull()][AllowEmptyString()][string]$Value, [int]$Max = 256)
     if ($null -eq $Value) { return '' }
-    if ($Value.Length -le $Max) { return $Value }
-    return $Value.Substring(0, $Max) + '...[truncated]'
+    $suffix = ''
+    if ($Value.Length -gt $Max) {
+        $cut = $Max
+        if ($cut -gt 0 -and [char]::IsHighSurrogate($Value[$cut - 1])) { $cut-- }
+        $Value = $Value.Substring(0, $cut)
+        $suffix = '...[truncated]'
+    }
+    $builder = $null
+    for ($i = 0; $i -lt $Value.Length; $i++) {
+        $c = $Value[$i]
+        $paired = $false
+        if ([char]::IsHighSurrogate($c)) { $paired = ($i + 1 -lt $Value.Length) -and [char]::IsLowSurrogate($Value[$i + 1]) }
+        if ([char]::IsSurrogate($c) -and -not $paired -and -not ([char]::IsLowSurrogate($c) -and $i -gt 0 -and [char]::IsHighSurrogate($Value[$i - 1]))) {
+            if ($null -eq $builder) { $builder = New-Object System.Text.StringBuilder($Value) }
+            $builder[$i] = [char]0xFFFD
+        }
+    }
+    if ($null -ne $builder) { $Value = $builder.ToString() }
+    return $Value + $suffix
 }
 
 function New-WtReceiptRow {

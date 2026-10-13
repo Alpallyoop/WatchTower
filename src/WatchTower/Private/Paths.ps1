@@ -46,6 +46,14 @@ function Get-WtTreeFile {
         $attributes = $item.Attributes
         if (($attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw (New-WtFailure 'PACKET_SYMLINK_FORBIDDEN' $item.FullName) }
         if ($item.Name.StartsWith('.') -or (($attributes -band [System.IO.FileAttributes]::Hidden) -ne 0)) { throw (New-WtFailure 'PACKET_HIDDEN_FILE_FORBIDDEN' $item.FullName) }
+        # Only regular files and directories: reading a named pipe, socket or device would
+        # block or never end (Unix; on Windows the file system cannot hold them).
+        if (-not (Test-WtWindows)) {
+            $stat = $null
+            if ($null -ne $item.PSObject.Properties['UnixStat']) { $stat = $item.UnixStat }
+            if ($null -eq $stat) { throw (New-WtFailure 'PACKET_FILE_TYPE_UNKNOWN' $item.FullName) }
+            if (@('File', 'Directory') -cnotcontains [string]$stat.ItemType) { throw (New-WtFailure 'PACKET_SPECIAL_FILE_FORBIDDEN' $item.FullName) }
+        }
         if (-not $item.PSIsContainer) { $files.Add((Get-WtRelativePath -Root $rootFull -Path $item.FullName)) }
     }
     $sorted = $files.ToArray()

@@ -68,13 +68,27 @@ function Invoke-WtIngest {
             }
             if (-not $accepted) { $destination = Get-WtFreePath (Join-Path $layout.Quarantine $name) }
 
-            $row = New-WtReceiptRow -Verdict $verdict -Accepted $accepted -Facts $facts -Authority $authority -VerifiedUtc $VerificationTime `
-                -PacketRef $name -RoutedTo (Get-WtRootRelative $layout $destination) -Roots @($layout.Root, $source)
-            $row['prev_receipt_hash'] = $receipts.Head
-            $row['receipt_id'] = Get-WtCanonicalHash $row
+            try {
+                $row = New-WtReceiptRow -Verdict $verdict -Accepted $accepted -Facts $facts -Authority $authority -VerifiedUtc $VerificationTime `
+                    -PacketRef $name -RoutedTo (Get-WtRootRelative $layout $destination) -Roots @($layout.Root, $source)
+                $row['prev_receipt_hash'] = $receipts.Head
+                $row['receipt_id'] = Get-WtCanonicalHash $row
+            }
+            catch {
+                # No single packet may stop the pipeline: if its receipt cannot be built from
+                # what it claims, it is rejected with nothing taken from it but its name.
+                $verdict = New-WtUnrecordableVerdict -Code 'RECEIPT_UNRECORDABLE'
+                $accepted = $false
+                $facts = Get-WtTelemetryFacts -Verdict $verdict -Settings $settings
+                $destination = Get-WtFreePath (Join-Path $layout.Quarantine $name)
+                $row = New-WtReceiptRow -Verdict $verdict -Accepted $false -Facts $facts -Authority $authority -VerifiedUtc $VerificationTime `
+                    -PacketRef $name -RoutedTo (Get-WtRootRelative $layout $destination) -Roots @($layout.Root, $source)
+                $row['prev_receipt_hash'] = $receipts.Head
+                $row['receipt_id'] = Get-WtCanonicalHash $row
+            }
             $receiptHash = Add-WtHashChainEntry -Chain $receipts -Row $row
 
-            [System.IO.Directory]::Move($source, $destination)
+            Invoke-WtFsRetry { [System.IO.Directory]::Move($source, $destination) }
             if (-not $accepted) {
                 $note = New-WtObject
                 $note['schema'] = 'watchtower.quarantine_note.v1'

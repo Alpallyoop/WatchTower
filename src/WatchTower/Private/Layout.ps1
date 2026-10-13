@@ -62,12 +62,19 @@ function Read-WtSettings {
         if (-not $publish.Contains($flag)) { $publish[$flag] = $true }
         [void](Get-WtField $publish $flag 'bool' 'settings.publish')
     }
+    # Service ids name folders; ids that differ only in case would share one folder on
+    # Windows and macOS, letting one service's health stand in for another's.
+    $serviceIds = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($binding in (Get-WtField $settings 'service_bindings' 'array' $where)) {
         Assert-WtKnownKeys $binding @('service_id', 'producer', 'producer_instance', 'device_id') 'settings.service_bindings'
         $serviceId = Get-WtField $binding 'service_id' 'text' 'settings.service_bindings'
         if ($serviceId -cnotmatch $script:WtServiceIdPattern -or $serviceId -match $script:WtReservedNamePattern) {
             throw (New-WtFailure 'SETTINGS_VALUE' ('service_id ' + $serviceId))
         }
+        if ($serviceIds.ContainsKey($serviceId) -and $serviceIds[$serviceId] -cne $serviceId) {
+            throw (New-WtFailure 'SETTINGS_VALUE' ('service_id {0} differs from {1} only in case' -f $serviceId, $serviceIds[$serviceId]))
+        }
+        $serviceIds[$serviceId] = $serviceId
         [void](Get-WtField $binding 'producer' 'text' 'settings.service_bindings')
         [void](Get-WtField $binding 'producer_instance' 'text' 'settings.service_bindings')
         if (Test-WtField $binding 'device_id') { [void](Get-WtField $binding 'device_id' 'text' 'settings.service_bindings') }
