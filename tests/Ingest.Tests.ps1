@@ -167,6 +167,8 @@ Invoke-WtTest 'receipts: rejection details never leak machine paths' {
     $text = Read-WtText (Join-Path $rootA 'proofs/receipts/watchtower.telemetry.receipt.v1.ndjson')
     Assert-WtTrue (-not $text.Contains($work)) 'absolute work path found in receipts'
     Assert-WtTrue (-not $text.Contains([System.IO.Path]::GetTempPath().TrimEnd([char[]]@('\', '/')))) 'temp path found in receipts'
+    Assert-WtTrue (-not $text.Contains((Invoke-Private { Get-WtTempRoot }))) 'project temp path found in receipts'
+    Assert-WtTrue $work.StartsWith((Invoke-Private { Get-WtTempRoot })) 'test scratch is not under the project temp root'
 }
 Invoke-WtTest 'evidence: signed latest-per-device documents (heartbeat, health_report, policy_attest)' {
     foreach ($kind in @('heartbeat', 'health_report', 'policy_attest')) {

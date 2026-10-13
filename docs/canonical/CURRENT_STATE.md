@@ -47,7 +47,7 @@ schema-validated before the tokens print.
 | live-state-surgeon packets accepted | Every packet LSS emits today is rejected (`MANIFEST_LISTS_OWN_SIGNATURE`); proposal 0002 lists the producer fixes | Re-run interop with a packet from a fixed emitter |
 | NFL witnessing WatchTower's outbox end to end | CPR accepts the packet; NFL's poll-and-witness run on it has not been recorded | Run NFL against `packets/outbox` on the host and keep its receipt |
 | Constellation oversight reading a live facet | Shape matches `oversight.mjs`'s reader; no run against a live WatchTower root recorded | Run oversight with a bound service |
-| Private-key permissions on Windows | Win32-OpenSSH refuses keys readable by others. Keys created by `init` are fine; a key copied into a widely shared folder is not. | `doctor` reports it as an `ssh_keygen`/`authority_key` failure; harden ACLs if it occurs |
+| Private-key permissions on Windows | Win32-OpenSSH refuses keys readable by others. WatchTower now restricts every key it creates or signs with (`icacls`); this path has not executed on Windows yet. | Windows CI and a host run |
 | Hosts with OpenSSH older than 8.1 (Windows 10, Server 2019 inbox 7.7) | No `ssh-keygen -Y` | `doctor` check `ssh_keygen` fails clearly; install OpenSSH 8.1+ |
 
 ## 3. Known limits (by design)

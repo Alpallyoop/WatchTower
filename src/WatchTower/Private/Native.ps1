@@ -105,6 +105,26 @@ function New-WtSshKey {
     if ($result.ExitCode -ne 0 -or -not [System.IO.File]::Exists($Path) -or -not [System.IO.File]::Exists($Path + '.pub')) {
         throw (New-WtFailure 'KEYGEN_FAILED' $result.Stderr.Trim())
     }
+    Protect-WtPrivateKey -Path $Path
+}
+
+$script:WtProtectedKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+
+function Protect-WtPrivateKey {
+    # Windows OpenSSH refuses a private key that anyone but its owner, SYSTEM and
+    # Administrators can read ("UNPROTECTED PRIVATE KEY FILE"). Keys under a project folder
+    # (for example on a data drive whose root grants Authenticated Users access) inherit
+    # broad rights, so they are restricted explicitly. Once per key per process. No-op
+    # elsewhere (ssh-keygen writes Unix keys 0600 itself).
+    param([Parameter(Mandatory = $true)][string]$Path)
+    if (-not (Test-WtWindows)) { return }
+    $full = Resolve-WtFullPath $Path
+    if ($script:WtProtectedKeys.Contains($full)) { return }
+    $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    $icacls = [System.IO.Path]::Combine([Environment]::GetFolderPath([Environment+SpecialFolder]::System), 'icacls.exe')
+    $result = Invoke-WtNative -FilePath $icacls -ArgumentList @($full, '/inheritance:r', '/grant:r', ('*{0}:F' -f $sid), '*S-1-5-18:F', '*S-1-5-32-544:F')
+    if ($result.ExitCode -ne 0) { throw (New-WtFailure 'KEY_ACL_FAILED' ($result.Stdout + $result.Stderr).Trim()) }
+    [void]$script:WtProtectedKeys.Add($full)
 }
 
 function ConvertTo-WtPublicKey {
@@ -125,6 +145,7 @@ function New-WtSignature {
         [Parameter(Mandatory = $true)][string]$MessagePath,
         [Parameter(Mandatory = $true)][string]$SignaturePath
     )
+    Protect-WtPrivateKey -Path $KeyPath
     $work = New-WtTempDirectory 'wtsign'
     try {
         $message = Join-Path $work 'message'

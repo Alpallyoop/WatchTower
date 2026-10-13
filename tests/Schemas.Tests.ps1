@@ -69,7 +69,8 @@ Invoke-WtTest 'validator: refuses keywords it does not implement and unresolved 
 Invoke-WtTest 'validator: enforces type, const, enum, pattern, required, additionalProperties and if/then' {
     $schema = ConvertFrom-WtJson ('{"type":"object","required":["a"],"additionalProperties":false,"properties":{"a":{"enum":["x","y"]},"b":{"type":"integer","minimum":0},' +
         '"c":{"type":"string","pattern":"^[0-9a-f]{4}$"},"d":{"const":true}},"if":{"properties":{"a":{"const":"y"}}},"then":{"required":["b"]}}')
-    $path = Join-Path ([System.IO.Path]::GetTempPath()) ('wt_schema_probe_' + [guid]::NewGuid().ToString('N') + '.json')
+    $probe = New-WtTempDirectory 'wt_schema_probe'
+    $path = Join-Path $probe 'schema.json'
     Write-WtJsonFile -Path $path -Value $schema
     try {
         Assert-WtEqual 0 (Get-SchemaErrors -SchemaPath $path -Value (ConvertFrom-WtJson '{"a":"x","c":"00ff","d":true}')).Length
@@ -77,7 +78,7 @@ Invoke-WtTest 'validator: enforces type, const, enum, pattern, required, additio
             Assert-WtTrue ((Get-SchemaErrors -SchemaPath $path -Value (ConvertFrom-WtJson $bad)).Length -gt 0) ('accepted ' + $bad)
         }
     }
-    finally { [System.IO.File]::Delete($path) }
+    finally { Remove-WtTree $probe }
 }
 
 # --- a complete node run: everything WatchTower writes ---------------------------------------

@@ -119,6 +119,9 @@ function Protect-WtDetail {
         $full = (Resolve-WtFullPath $root).TrimEnd([char[]]@('\', '/'))
         $text = $text.Replace($full + [System.IO.Path]::DirectorySeparatorChar, '').Replace($full, '.')
     }
-    $temp = [System.IO.Path]::GetTempPath().TrimEnd([char[]]@('\', '/'))
-    return $text.Replace($temp, '<temp>')
+    foreach ($temp in @((Get-WtTempRoot), [System.IO.Path]::GetTempPath())) {
+        $trimmed = $temp.TrimEnd([char[]]@('\', '/'))
+        if ($trimmed) { $text = $text.Replace($trimmed, '<temp>') }
+    }
+    return $text
 }

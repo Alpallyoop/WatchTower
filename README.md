@@ -16,7 +16,9 @@ It does not capture live state, issue identities or decide policy
 - Windows PowerShell 5.1 or PowerShell 7 (Windows, Linux, macOS)
 - OpenSSH `ssh-keygen` 8.1 or newer (`ssh-keygen -Y sign`)
 
-No other dependencies, no network access.
+No other dependencies, no network access. Everything WatchTower writes stays inside the project
+folder: state under the state root, scratch under `.wt-tmp/` (or `WATCHTOWER_TMP`); nothing goes
+to `%TEMP%`, AppData or global configuration.
 
 ## Quick start
 

@@ -42,6 +42,13 @@ Dictionary access always goes through `PSBase`, so attacker-supplied keys named 
 All runtime state lives under one root: `-Root`, defaulting to the repository root.
 The layout is fixed; only behaviour is configurable.
 
+WatchTower writes nothing to the user profile: no `%TEMP%`, no AppData, no global
+configuration. Short-lived scratch directories (signing copies, test work) are created under
+`<repository>/.wt-tmp/` (git-ignored) or `WATCHTOWER_TMP` when set, and removed after use.
+On Windows, every private key WatchTower creates or signs with is restricted to its owner,
+SYSTEM and Administrators (`icacls`), because Windows OpenSSH refuses keys that inherit broader
+rights from a project folder (`KEY_ACL_FAILED` if that cannot be done).
+
 ```
 <root>/
   config/watchtower.settings.json            optional, watchtower.settings.v1

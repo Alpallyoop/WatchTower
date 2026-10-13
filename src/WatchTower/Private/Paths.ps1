@@ -74,10 +74,22 @@ function ConvertTo-WtPathSegment {
     return 'id-' + (Get-WtSha256 -Text $Value).Substring(0, 40)
 }
 
+# Scratch space lives inside the project, never in the user profile (%TEMP%, AppData):
+# <repository>/.wt-tmp by default (git-ignored), or WATCHTOWER_TMP when set.
+$script:WtDefaultTempRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, '..', '..', '..', '.wt-tmp'))
+
+function Get-WtTempRoot {
+    [OutputType([string])]
+    param()
+    $configured = [Environment]::GetEnvironmentVariable('WATCHTOWER_TMP')
+    if ($configured) { return [System.IO.Path]::GetFullPath($configured) }
+    return $script:WtDefaultTempRoot
+}
+
 function New-WtTempDirectory {
     [OutputType([string])]
     param([string]$Prefix = 'watchtower')
-    $path = Join-Path ([System.IO.Path]::GetTempPath()) ('{0}_{1}' -f $Prefix, [guid]::NewGuid().ToString('N'))
+    $path = Join-Path (Get-WtTempRoot) ('{0}_{1}' -f $Prefix, [guid]::NewGuid().ToString('N'))
     [void][System.IO.Directory]::CreateDirectory($path)
     return $path
 }
