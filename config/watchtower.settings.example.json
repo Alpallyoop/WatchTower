@@ -1,0 +1,23 @@
+{
+  "schema": "watchtower.settings.v1",
+  "max_future_skew_seconds": 300,
+  "publish": {
+    "device_evidence": true,
+    "service_health": true,
+    "nfl_outbox": true,
+    "device_pledge": true
+  },
+  "service_bindings": [
+    {
+      "service_id": "live-state-surgeon",
+      "producer": "lss-dev",
+      "producer_instance": "lss-node-01"
+    }
+  ],
+  "policy_pins": [
+    {
+      "effective_group": "fleet-default",
+      "expected_policy_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}
