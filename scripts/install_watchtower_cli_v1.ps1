@@ -1,7 +1,10 @@
 param(
-  [string]$InstallRoot = "$env:LOCALAPPDATA\WatchTowerCLI",
+  # Default: <RepoRoot>\local\WatchTowerCLI inside the project (was %LOCALAPPDATA%\WatchTowerCLI).
+  [string]$InstallRoot = "",
   [string]$RepoRoot = "",
-  [switch]$UseLocalRelease
+  [switch]$UseLocalRelease,
+  # Off by default: adding the install folder to the user PATH changes the user profile.
+  [switch]$AddToUserPath
 )
 
 Set-StrictMode -Version 3.0
@@ -66,17 +69,27 @@ function WT-AddToUserPath([string]$Dir){
 
 $zipUrl = "https://github.com/ScrappyHub/WatchTower/releases/download/watchtower-cli-v1.0.1/watchtower_cli_v1.zip"
 
-if([string]::IsNullOrWhiteSpace($RepoRoot)){
+if([string]::IsNullOrWhiteSpace($RepoRoot) -and -not [string]::IsNullOrWhiteSpace($PSScriptRoot)){
   $RepoRoot = Split-Path -Parent $PSScriptRoot
 }
 if(Test-Path -LiteralPath $RepoRoot -PathType Container){
   $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 }
 
+if([string]::IsNullOrWhiteSpace($RepoRoot) -or -not (Test-Path -LiteralPath $RepoRoot -PathType Container)){
+  # Run remotely (iwr | iex): there is no repository; install under the current folder.
+  $RepoRoot = (Get-Location).Path
+}
+if([string]::IsNullOrWhiteSpace($InstallRoot)){
+  $InstallRoot = Join-Path $RepoRoot "local\WatchTowerCLI"
+}
 WT-EnsureDir $InstallRoot
 
-$tempZip = Join-Path $env:TEMP "watchtower_cli_v1.zip"
-$tempExtract = Join-Path $env:TEMP "watchtower_cli_v1_extract"
+# Scratch stays inside the project (never %TEMP%).
+$scratch = Join-Path $RepoRoot ".wt-tmp"
+WT-EnsureDir $scratch
+$tempZip = Join-Path $scratch "watchtower_cli_v1.zip"
+$tempExtract = Join-Path $scratch "watchtower_cli_v1_extract"
 
 WT-RemoveIfExists $tempZip
 WT-RemoveIfExists $tempExtract
@@ -115,8 +128,10 @@ $watchtowerCmd = Join-Path $InstallRoot "watchtower.cmd"
 $watchtowerCliCmd = Join-Path $InstallRoot "watchtower-cli.cmd"
 $cliScript = Join-Path $finalRoot "scripts\watchtower_cli_v1.ps1"
 
+# Relative to the launcher's own folder (%~dp0), so the install keeps working if the
+# project folder moves (for example from C: to S:).
 $launcherTxt = '@echo off' + "`n" +
-'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + $cliScript + '" -RepoRoot "' + $finalRoot + '" %*'
+'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%~dp0watchtower_cli_v1\scripts\watchtower_cli_v1.ps1" -RepoRoot "%~dp0watchtower_cli_v1" %*'
 
 WT-WriteUtf8NoBomLf -Path $watchtowerCmd -Text $launcherTxt
 WT-WriteUtf8NoBomLf -Path $watchtowerCliCmd -Text $launcherTxt
@@ -124,7 +139,8 @@ WT-WriteUtf8NoBomLf -Path $watchtowerCliCmd -Text $launcherTxt
 $uninstallPath = Join-Path $InstallRoot "uninstall_watchtower_cli_v1.ps1"
 $uninstallTxt = @'
 param(
-  [string]$InstallRoot = "$env:LOCALAPPDATA\WatchTowerCLI"
+  # The folder this uninstaller was installed into.
+  [string]$InstallRoot = $PSScriptRoot
 )
 
 Set-StrictMode -Version 3.0
@@ -154,7 +170,8 @@ Write-Host ("INSTALL_ROOT: " + $InstallRoot) -ForegroundColor Green
 '@
 WT-WriteUtf8NoBomLf -Path $uninstallPath -Text $uninstallTxt
 
-WT-AddToUserPath $InstallRoot
+if($AddToUserPath){ WT-AddToUserPath $InstallRoot }
+else { Write-Host ("PATH_UNCHANGED: run " + (Join-Path $InstallRoot "watchtower.cmd") + " directly, or reinstall with -AddToUserPath") -ForegroundColor Green }
 
 
 

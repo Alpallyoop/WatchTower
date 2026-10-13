@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 # WatchTower CLI selftest.
 # Repointed by audit (2026-08-26) from a never-implemented command surface
 # (`device list`, `receipts list`, `freeze show`) to the CLI's REAL implemented
-# commands, plus a fail-closed negative case. See docs/WATCHTOWER_WBS_OFFICIAL_v1.md (H9).
+# commands, plus a fail-closed negative case. See docs/history/WATCHTOWER_WBS_OFFICIAL_v1.md (H9).
 
 function WT-Die([string]$m){
   throw ("WATCHTOWER_CLI_SELFTEST_FAIL: " + $m)
@@ -16,7 +16,10 @@ function WT-Die([string]$m){
 
 function WT-InvokeCapture([string]$Script,[string[]]$ChildArgs){
   $PSExe = (Get-Command powershell.exe -ErrorAction Stop).Source
-  $outFile = Join-Path $env:TEMP ("watchtower_cli_selftest_" + [guid]::NewGuid().ToString("N") + ".txt")
+  # Scratch stays inside the project (never %TEMP%).
+  $scratch = Join-Path $RepoRoot ".wt-tmp"
+  if(-not (Test-Path -LiteralPath $scratch -PathType Container)){ New-Item -ItemType Directory -Force -Path $scratch | Out-Null }
+  $outFile = Join-Path $scratch ("watchtower_cli_selftest_" + [guid]::NewGuid().ToString("N") + ".txt")
   try {
     $p = Start-Process `
       -FilePath $PSExe `

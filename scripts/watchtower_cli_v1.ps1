@@ -97,10 +97,13 @@ switch($cmd0){
   }
 
   "doctor" {
-    $installRoot = Join-Path $env:LOCALAPPDATA "WatchTowerCLI"
+    # Installed bundle: <InstallRoot>\watchtower_cli_v1 next to watchtower.cmd.
+    # From the repository: <RepoRoot>\local\WatchTowerCLI (never %LOCALAPPDATA%).
+    $installRoot = Split-Path -Parent $RepoRoot
+    if(-not (Test-Path -LiteralPath (Join-Path $installRoot "watchtower.cmd"))){ $installRoot = Join-Path $RepoRoot "local\WatchTowerCLI" }
     Write-Host "WATCHTOWER_DOCTOR_START"
     Write-Host ("REPO_ROOT: " + $RepoRoot)
-    Write-Host ("LOCALAPPDATA_INSTALL_ROOT: " + $installRoot)
+    Write-Host ("INSTALL_ROOT: " + $installRoot)
     Write-Host ("USER_PATH_CONTAINS_INSTALL_ROOT: " + ([Environment]::GetEnvironmentVariable("Path","User") -like ("*" + $installRoot + "*")))
     Write-Host ("WATCHTOWER_CMD_EXISTS: " + (Test-Path -LiteralPath (Join-Path $installRoot "watchtower.cmd")))
     Write-Host ("WATCHTOWER_CLI_CMD_EXISTS: " + (Test-Path -LiteralPath (Join-Path $installRoot "watchtower-cli.cmd")))

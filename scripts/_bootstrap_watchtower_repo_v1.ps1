@@ -1,6 +1,7 @@
 ﻿Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
-$Root = "C:\dev\watchtower"
+# The repository this script lives in (was hardcoded to C:\dev\watchtower).
+$Root = Split-Path -Parent $PSScriptRoot
 
 function Utf8NoBom(){ New-Object System.Text.UTF8Encoding($false) }
 function WriteUtf8Lf([string]$path,[string]$text){

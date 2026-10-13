@@ -7,9 +7,13 @@ const { spawnSync } = require("child_process");
 const PORT = 43187;
 const HOST = "127.0.0.1";
 
-const BUNDLE_ROOT = path.join(process.env.LOCALAPPDATA || "", "WatchTowerCLI", "watchtower_cli_v1");
+// Everything lives inside the project (was %LOCALAPPDATA%): <repo>/local/WatchTowerCLI and
+// <repo>/local/WatchTowerInspector, or WATCHTOWER_LOCAL_ROOT when set.
+const REPO_ROOT = path.resolve(__dirname, "..", "..");
+const LOCAL_ROOT = process.env.WATCHTOWER_LOCAL_ROOT ? path.resolve(process.env.WATCHTOWER_LOCAL_ROOT) : path.join(REPO_ROOT, "local");
+const BUNDLE_ROOT = path.join(LOCAL_ROOT, "WatchTowerCLI", "watchtower_cli_v1");
 const RUNTIME_ROOT = path.join(BUNDLE_ROOT, "runtime", "watchtower_engine_v1");
-const INSPECTOR_ROOT = path.join(process.env.LOCALAPPDATA || "", "WatchTowerInspector");
+const INSPECTOR_ROOT = path.join(LOCAL_ROOT, "WatchTowerInspector");
 const REGISTRY_ROOT = path.join(INSPECTOR_ROOT, "device_registry");
 const SESSION_ROOT = path.join(INSPECTOR_ROOT, "sessions");
 const INVENTORY_ROOT = path.join(INSPECTOR_ROOT, "inventory");

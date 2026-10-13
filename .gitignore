@@ -62,8 +62,9 @@ runtime/
 watchtower-test-run.json
 test-report.json
 
-# Data migrated from %LOCALAPPDATA% (WatchTowerCLI, WatchTowerInspector): machine-local, large
-_appdata_migrated/
+# Project-local home for the v1 CLI install and inspector data (formerly %LOCALAPPDATA%\WatchTowerCLI
+# and %LOCALAPPDATA%\WatchTowerInspector): machine-local, large, never committed
+local/
 
 # v1 inspector UI build output and bridge smoke/probe logs
 ui/dist/

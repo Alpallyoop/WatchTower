@@ -5,18 +5,24 @@ param(
   [string]$Producer = "watchtower",
   [string]$ProducerInstance = "watchtower-local-1",
 
-  [string]$AuthorityKey = "C:\dev\watchtower\proofs\keys\watchtower_authority_ed25519",
+  # Empty defaults resolve inside this repository and its sibling NFL checkout
+  # (were C:\dev\watchtower and C:\ProgramData).
+  [string]$AuthorityKey = "",
   [string]$Principal = "single-tenant/watchtower_authority/authority/watchtower",
   [string]$KeyId = "watchtower-authority-ed25519",
 
-  [string]$Outbox = "C:\ProgramData\Watchtower\outbox",
-  [string]$PledgesDir = "C:\ProgramData\Watchtower\pledges",
-  [string]$NflInbox = "C:\ProgramData\NFL\inbox"
+  [string]$Outbox = "",
+  [string]$PledgesDir = "",
+  [string]$NflInbox = ""
   ,
   [switch]$PauseOnExit
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+if([string]::IsNullOrWhiteSpace($AuthorityKey)){ $AuthorityKey = Join-Path $RepoRoot "proofs\keys\watchtower_authority_ed25519" }
+if([string]::IsNullOrWhiteSpace($Outbox)){ $Outbox = Join-Path $RepoRoot "packets\outbox" }
+if([string]::IsNullOrWhiteSpace($PledgesDir)){ $PledgesDir = Join-Path $RepoRoot "proofs\pledges" }
+if([string]::IsNullOrWhiteSpace($NflInbox)){ $NflInbox = Join-Path (Split-Path -Parent $RepoRoot) "nfl\packets\inbox" }
 
 . (Join-Path $RepoRoot "scripts\_lib_watchtower_canon_v1.ps1")
 

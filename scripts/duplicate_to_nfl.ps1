@@ -5,9 +5,11 @@
 $ErrorActionPreference="Stop"
 Set-StrictMode -Version Latest
 
-$Producer="Watchtower"
-$src = Join-Path "C:\ProgramData\$Producer\outbox" $PacketId
-$dst = Join-Path "C:\ProgramData\NFL\inbox" $PacketId
+# Project-local paths (was C:\ProgramData): this repository's packets\outbox and the
+# sibling NFL checkout's packets\inbox.
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+$src = Join-Path (Join-Path $RepoRoot "packets\outbox") $PacketId
+$dst = Join-Path (Join-Path (Split-Path -Parent $RepoRoot) "nfl\packets\inbox") $PacketId
 
 if(-not(Test-Path -LiteralPath $src)){ throw "Missing source packet: $src" }
 

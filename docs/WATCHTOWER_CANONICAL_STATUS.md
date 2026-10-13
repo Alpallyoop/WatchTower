@@ -11,10 +11,10 @@ Current state:
 - freeze-ready evidence captured
 
 Latest green bundle:
-- C:\dev\watchtower\proofs\receipts\20260308T033524Z
+- proofs/receipts/20260308T033524Z (local evidence, git-ignored; present in the S drive working copy)
 
 Frozen bundle:
-- C:\dev\watchtower\test_vectors\handoff_frozen\watchtower_nfl_handoff_green_20260308
+- test_vectors/handoff_frozen/watchtower_nfl_handoff_green_20260308
 
 Locked files:
 - scripts/watchtower_consume_nfl_handoff_v1.ps1

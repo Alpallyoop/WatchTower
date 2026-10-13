@@ -1,7 +1,11 @@
 param(
   [Parameter(Mandatory=$true)][string]$RepoRoot,
-  [Parameter(Mandatory=$false)][string]$HandoffDir = "C:\dev\nfl\handoff\watchtower\nfl_tier0_watchtower_handoff_20260308T024440Z"
+  # Default: the sibling NFL checkout next to this repository (was C:\dev\nfl\...).
+  [Parameter(Mandatory=$false)][string]$HandoffDir = ""
 )
+if([string]::IsNullOrWhiteSpace($HandoffDir)){
+  $HandoffDir = Join-Path (Split-Path -Parent $RepoRoot) "nfl\handoff\watchtower\nfl_tier0_watchtower_handoff_20260308T024440Z"
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
