@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.settings.v1.json",
+  "title": "WatchTower settings",
+  "description": "config/watchtower.settings.json. Optional; documented defaults apply when absent. Unknown keys are rejected (SETTINGS_UNKNOWN_KEY). Also the settings_schema of the Global Workbench WatchTower plugin.",
+  "type": "object",
+  "required": [
+    "schema"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.settings.v1"
+    },
+    "max_future_skew_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 86400,
+      "description": "Producer clocks may run ahead of verification time by at most this much (default 300)."
+    },
+    "publish": {
+      "type": "object",
+      "properties": {
+        "device_evidence": {
+          "type": "boolean"
+        },
+        "service_health": {
+          "type": "boolean"
+        },
+        "nfl_outbox": {
+          "type": "boolean"
+        },
+        "device_pledge": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "service_bindings": {
+      "type": "array",
+      "description": "Which producer stream reports a Constellation service's health (service_id = registry repository_dir).",
+      "items": {
+        "type": "object",
+        "required": [
+          "service_id",
+          "producer",
+          "producer_instance"
+        ],
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9._\\-]{0,62}[A-Za-z0-9_\\-])?$"
+          },
+          "producer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "producer_instance": {
+            "type": "string",
+            "minLength": 1
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "policy_pins": {
+      "type": "array",
+      "description": "Expected effective-policy hash per device or effective group; a mismatch is POLICY_DRIFT evidence.",
+      "items": {
+        "type": "object",
+        "required": [
+          "expected_policy_hash"
+        ],
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "effective_group": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_policy_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

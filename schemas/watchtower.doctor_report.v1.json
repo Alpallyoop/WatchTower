@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.doctor_report.v1.json",
+  "title": "Doctor report",
+  "description": "runtime/doctor_report.json (Invoke-WtDoctor -Publish).",
+  "type": "object",
+  "required": [
+    "schema",
+    "observed_utc",
+    "health_ok",
+    "failure_count",
+    "inbox_pending",
+    "checks",
+    "node_id"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.doctor_report.v1"
+    },
+    "observed_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "health_ok": {
+      "type": "boolean"
+    },
+    "failure_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "inbox_pending": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "ok",
+          "code",
+          "detail"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 526
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    }
+  },
+  "additionalProperties": false
+}

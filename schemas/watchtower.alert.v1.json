@@ -1,14 +1,110 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.alert.v1.json",
+  "title": "Telemetry alert evidence",
+  "description": "Alert evidence issued by WatchTower (proofs/alerts/watchtower.alert.v1.ndjson, hash-chained: alert_hash over the row without alert_hash). Alerts for packets whose signer could not be verified are never attributed to a device (device_id 'unknown'). Properties after reason were added in v2.0.0 (additive, optional).",
   "schema": "watchtower.alert.v1",
   "type": "object",
-  "required": ["schema","device_id","observed_utc","alert_type","severity","state"],
+  "required": [
+    "schema",
+    "device_id",
+    "observed_utc",
+    "alert_type",
+    "severity",
+    "state"
+  ],
   "properties": {
-    "schema": { "const": "watchtower.alert.v1" },
-    "device_id": { "type": "string", "minLength": 1 },
-    "observed_utc": { "type": "string", "minLength": 20 },
-    "alert_type": { "type": "string", "minLength": 1 },
-    "severity": { "type": "string", "enum": ["info","warning","critical"] },
-    "state": { "type": "string", "enum": ["unknown","stale","broken","drift","degraded","ok"] },
-    "reason": { "type": "string" }
+    "schema": {
+      "const": "watchtower.alert.v1"
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observed_utc": {
+      "type": "string",
+      "minLength": 20
+    },
+    "alert_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "stale",
+        "broken",
+        "drift",
+        "degraded",
+        "ok"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "alert_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "value"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "packet_id",
+              "event_hash",
+              "watchtower_receipt_hash"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "verifier": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower",
+      "description": "WatchTower's NeverLost principal."
+    },
+    "verifier_key_id": {
+      "const": "watchtower-authority-ed25519"
+    },
+    "alert_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prev_alert_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "alert_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
   }
 }

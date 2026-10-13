@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.posture.v1.json",
+  "title": "Posture measurement set",
+  "description": "Producer-supplied posture carried inside a health_report body. WatchTower verifies its hash; it does not interpret the measurements.",
+  "type": "object",
+  "required": [
+    "schema",
+    "measurements"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.posture.v1"
+    },
+    "measurements": {
+      "description": "Producer measurements (intended: array of {key, value})."
+    }
+  }
+}

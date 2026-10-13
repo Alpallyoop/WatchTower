@@ -1,0 +1,263 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.telemetry.receipt.v1.json",
+  "title": "Verifier receipt",
+  "description": "One row of proofs/receipts/watchtower.telemetry.receipt.v1.ndjson per packet WatchTower processed, accepted or not. Rows are canonical JSON, hash-chained: receipt_hash = sha256(canonical_json(row without receipt_hash) + LF), prev_receipt_hash links to the previous row (GENESIS first). Consumers (live-state-surgeon) act only on verify_result = ok. Facts (health_status, compliance, hashes) are recorded only from bodies that passed validation. Strings that came from a producer are capped; unknown values are \"\" and seq is -1.",
+  "type": "object",
+  "required": [
+    "schema",
+    "receipt_time",
+    "verifier",
+    "verifier_key_id",
+    "node_id",
+    "packet_ref",
+    "packet_id",
+    "packet_kind",
+    "event_type",
+    "event_hash",
+    "event_id",
+    "producer",
+    "producer_instance",
+    "key_id",
+    "namespace",
+    "device_id",
+    "producer_time",
+    "seq",
+    "verify_result",
+    "fail_reason",
+    "stage",
+    "signer_verified",
+    "health_status",
+    "compliance",
+    "policy_hash_claimed",
+    "posture_hash",
+    "policy_check",
+    "policy_hash_expected",
+    "disposition",
+    "routed_to",
+    "receipt_id",
+    "prev_receipt_hash",
+    "receipt_hash"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.telemetry.receipt.v1"
+    },
+    "receipt_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "verifier": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower",
+      "description": "WatchTower's NeverLost principal."
+    },
+    "verifier_key_id": {
+      "const": "watchtower-authority-ed25519"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "packet_ref": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "packet_id": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "packet_kind": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "event_type": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "event_hash": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "event_id": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "producer": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "producer_instance": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "key_id": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "namespace": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "device_id": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "producer_time": {
+      "type": "string",
+      "maxLength": 270
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": -1
+    },
+    "verify_result": {
+      "enum": [
+        "ok",
+        "reject"
+      ]
+    },
+    "fail_reason": {
+      "type": "object",
+      "required": [
+        "code",
+        "detail"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^(NONE|[A-Z][A-Z0-9_]*)$"
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 526
+        }
+      },
+      "additionalProperties": false
+    },
+    "stage": {
+      "enum": [
+        "pcv1",
+        "manifest",
+        "event",
+        "signature",
+        "body",
+        "complete",
+        "state",
+        "route"
+      ]
+    },
+    "signer_verified": {
+      "type": "boolean"
+    },
+    "health_status": {
+      "enum": [
+        "",
+        "ok",
+        "degraded",
+        "fail"
+      ]
+    },
+    "compliance": {
+      "enum": [
+        "",
+        "compliant",
+        "noncompliant"
+      ]
+    },
+    "policy_hash_claimed": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "posture_hash": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "policy_check": {
+      "enum": [
+        "n/a",
+        "unpinned",
+        "match",
+        "mismatch"
+      ]
+    },
+    "policy_hash_expected": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "disposition": {
+      "enum": [
+        "accepted",
+        "quarantined"
+      ]
+    },
+    "routed_to": {
+      "type": "string",
+      "pattern": "^packets/(receipts|quarantine)/[^/]+$"
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256(canonical_json(row before receipt_id/receipt_hash) + LF)."
+    },
+    "prev_receipt_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "receipt_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verify_result": {
+            "const": "ok"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "fail_reason": {
+            "properties": {
+              "code": {
+                "const": "NONE"
+              },
+              "detail": {
+                "const": ""
+              }
+            }
+          },
+          "disposition": {
+            "const": "accepted"
+          },
+          "signer_verified": {
+            "const": true
+          },
+          "stage": {
+            "const": "complete"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "fail_reason": {
+            "properties": {
+              "code": {
+                "not": {
+                  "const": "NONE"
+                }
+              }
+            }
+          },
+          "disposition": {
+            "const": "quarantined"
+          }
+        }
+      }
+    }
+  ]
+}

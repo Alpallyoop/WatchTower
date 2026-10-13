@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/packet.manifest.v1.json",
+  "title": "Telemetry packet manifest (inbound)",
+  "description": "manifest.json of a PCv1 Option A telemetry packet. packet_id.txt = sha256 of these exact bytes. files[] covers every packet file except manifest.json, packet_id.txt, sha256sums.txt and signatures/packet.sig (a manifest cannot list its own signature). signatures/packet.sig signs these bytes under namespace watchtower/packet.",
+  "type": "object",
+  "required": [
+    "schema",
+    "packet_kind",
+    "producer",
+    "producer_instance",
+    "created_time",
+    "payload",
+    "files"
+  ],
+  "properties": {
+    "schema": {
+      "const": "packet.manifest.v1"
+    },
+    "packet_kind": {
+      "const": "packet.telemetry.v1"
+    },
+    "producer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer_instance": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "event_type",
+        "event_schema",
+        "event_hash"
+      ],
+      "properties": {
+        "event_type": {
+          "enum": [
+            "watchtower.heartbeat.v1",
+            "watchtower.health_report.v1",
+            "watchtower.policy_attest.v1",
+            "watchtower.alert.v1"
+          ]
+        },
+        "event_schema": {
+          "const": "watchtower.telemetry_event.v1"
+        },
+        "event_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256 of payload/telemetry_event.json bytes."
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  },
+  "not": {
+    "required": [
+      "packet_id"
+    ]
+  }
+}

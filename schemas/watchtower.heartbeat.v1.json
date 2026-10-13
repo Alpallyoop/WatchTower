@@ -1,13 +1,95 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.heartbeat.v1.json",
+  "title": "Verified heartbeat",
+  "description": "Latest verified heartbeat per device, published by WatchTower at runtime/devices/<device>/heartbeat.json with a detached .sig (namespace watchtower). observed_utc is the producer's observation time, never the publish time. Properties after host_name were added in v2.0.0 (additive, optional).",
   "schema": "watchtower.heartbeat.v1",
   "type": "object",
-  "required": ["schema","device_id","observed_utc","heartbeat_ok"],
+  "required": [
+    "schema",
+    "device_id",
+    "observed_utc",
+    "heartbeat_ok"
+  ],
   "properties": {
-    "schema": { "const": "watchtower.heartbeat.v1" },
-    "device_id": { "type": "string", "minLength": 1 },
-    "observed_utc": { "type": "string", "minLength": 20 },
-    "heartbeat_ok": { "type": "boolean" },
-    "agent_version": { "type": "string" },
-    "host_name": { "type": "string" }
+    "schema": {
+      "const": "watchtower.heartbeat.v1"
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observed_utc": {
+      "type": "string",
+      "minLength": 20
+    },
+    "heartbeat_ok": {
+      "type": "boolean"
+    },
+    "agent_version": {
+      "type": "string"
+    },
+    "host_name": {
+      "type": "string"
+    },
+    "proof_status": {
+      "enum": [
+        "verified",
+        "self-check"
+      ],
+      "description": "verified: projected from a signer-verified telemetry receipt. self-check: WatchTower's own doctor."
+    },
+    "verification": {
+      "type": "object",
+      "description": "Who verified this document, when, and the receipt that authorises it. Absent receipt fields mean a self-check (doctor), not a producer observation.",
+      "required": [
+        "verifier",
+        "verifier_key_id",
+        "node_id",
+        "verified_utc"
+      ],
+      "properties": {
+        "verifier": {
+          "const": "single-tenant/watchtower_authority/authority/watchtower",
+          "description": "WatchTower's NeverLost principal."
+        },
+        "verifier_key_id": {
+          "const": "watchtower-authority-ed25519"
+        },
+        "node_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "verified_utc": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        },
+        "receipt_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "packet_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "event_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "producer_instance": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "uptime_seconds": {
+      "type": "integer",
+      "minimum": 0
+    }
   }
 }

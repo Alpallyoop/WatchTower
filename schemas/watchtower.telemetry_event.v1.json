@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.telemetry_event.v1.json",
+  "title": "Telemetry event (inbound)",
+  "description": "One event emitted by a producer such as live-state-surgeon, carried as payload/telemetry_event.json in a signed PCv1 telemetry packet. Constraints here are exactly the ones WatchTower enforces; fields marked informational are passed through unvalidated. Validation also recomputes posture_hash and policy_hash_claimed and verifies both signatures against the pinned trust bundle (docs/contracts/live-state-surgeon.md).",
+  "type": "object",
+  "required": [
+    "schema",
+    "event_type",
+    "header",
+    "body"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.telemetry_event.v1"
+    },
+    "event_type": {
+      "enum": [
+        "watchtower.heartbeat.v1",
+        "watchtower.health_report.v1",
+        "watchtower.policy_attest.v1",
+        "watchtower.alert.v1"
+      ]
+    },
+    "header": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "device_id",
+        "producer",
+        "producer_instance",
+        "key_id",
+        "namespace",
+        "producer_time",
+        "seq"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:\\-]{0,127}$"
+        },
+        "device_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:\\-]{0,127}$"
+        },
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "producer_instance": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "namespace": {
+          "enum": [
+            "watchtower/telemetry-heartbeat",
+            "watchtower/telemetry-health",
+            "watchtower/telemetry-policy",
+            "watchtower/telemetry-alert"
+          ],
+          "description": "Must be the namespace bound to event_type; it is also the ssh-keygen -Y namespace of payload/telemetry_event.sig."
+        },
+        "producer_time": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Strictly increasing per (producer, producer_instance, device_id) stream."
+        },
+        "software_ref": {
+          "description": "Informational."
+        },
+        "prev_links": {
+          "description": "Informational."
+        }
+      }
+    },
+    "body": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "watchtower.heartbeat.v1"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/heartbeat_body"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "watchtower.health_report.v1"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/health_report_body"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "watchtower.policy_attest.v1"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/policy_attest_body"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "watchtower.alert.v1"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/alert_body"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "heartbeat_body": {
+      "type": "object",
+      "required": [
+        "uptime_seconds"
+      ],
+      "properties": {
+        "uptime_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_hash_claimed": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "capabilities": {
+          "description": "Informational (intended: array of strings)."
+        }
+      }
+    },
+    "health_report_body": {
+      "type": "object",
+      "required": [
+        "health_status",
+        "posture",
+        "posture_hash"
+      ],
+      "properties": {
+        "health_status": {
+          "enum": [
+            "ok",
+            "degraded",
+            "fail"
+          ]
+        },
+        "posture": {
+          "$ref": "#/$defs/posture"
+        },
+        "posture_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256(canonical_json(posture) + LF); recomputed by WatchTower."
+        },
+        "signals": {
+          "description": "Informational."
+        },
+        "queue_status": {
+          "description": "Informational."
+        },
+        "storage_status": {
+          "description": "Informational."
+        },
+        "last_job": {
+          "description": "Informational."
+        },
+        "evidence_refs": {
+          "description": "Informational."
+        }
+      }
+    },
+    "policy_attest_body": {
+      "type": "object",
+      "required": [
+        "effective_group",
+        "policy",
+        "policy_hash_claimed",
+        "compliance"
+      ],
+      "properties": {
+        "effective_group": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy": {
+          "type": "object",
+          "required": [
+            "schema",
+            "policy_id",
+            "policy_version",
+            "rules_hash"
+          ],
+          "properties": {
+            "schema": {
+              "const": "covenantgate.effective_policy.v1"
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policy_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rules_hash": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "policy_hash_claimed": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256(canonical_json({schema, policy_id, policy_version, rules_hash}) + LF); recomputed by WatchTower."
+        },
+        "compliance": {
+          "enum": [
+            "compliant",
+            "noncompliant"
+          ]
+        },
+        "posture_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "policy_source_ref": {
+          "description": "Informational."
+        },
+        "violations": {
+          "description": "Informational."
+        }
+      }
+    },
+    "alert_body": {
+      "type": "object",
+      "required": [
+        "alert_type",
+        "state",
+        "reason_codes"
+      ],
+      "properties": {
+        "alert_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": [
+            "unknown",
+            "stale",
+            "broken",
+            "drift",
+            "degraded",
+            "ok"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence": {
+          "description": "Informational."
+        }
+      }
+    },
+    "posture": {
+      "type": "object",
+      "required": [
+        "schema",
+        "measurements"
+      ],
+      "properties": {
+        "schema": {
+          "const": "watchtower.posture.v1"
+        },
+        "measurements": {
+          "description": "Producer measurements (intended: array of {key, value})."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.checkpoint.v1.json",
+  "title": "Checkpoint seal",
+  "description": "Signed seal over the receipt ledger head (docs/ledger.md, ledger.checkpoint.seal). Detached signature: proofs/receipts/checkpoints/<checkpoint_hash>.sig over canonical_json(row) + LF, namespace 'watchtower'.",
+  "type": "object",
+  "required": [
+    "schema",
+    "event_type",
+    "ledger",
+    "transcript_head_hash",
+    "receipt_count",
+    "range",
+    "alerts_head_hash",
+    "alert_count",
+    "checkpoint_time",
+    "verifier",
+    "verifier_key_id",
+    "node_id",
+    "prev_checkpoint_hash",
+    "checkpoint_hash"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.checkpoint.v1"
+    },
+    "event_type": {
+      "const": "ledger.checkpoint.seal"
+    },
+    "ledger": {
+      "const": "watchtower.telemetry.receipt.v1"
+    },
+    "transcript_head_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "receipt_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "range": {
+      "type": "object",
+      "required": [
+        "first_index",
+        "last_index"
+      ],
+      "properties": {
+        "first_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "last_index": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "alerts_head_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "alert_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checkpoint_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "verifier": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower",
+      "description": "WatchTower's NeverLost principal."
+    },
+    "verifier_key_id": {
+      "const": "watchtower-authority-ed25519"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prev_checkpoint_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "checkpoint_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

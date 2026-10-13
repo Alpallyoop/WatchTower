@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.evidence_index.v1.json",
+  "title": "Evidence index",
+  "description": "runtime/evidence_index.json: discovery document for operator surfaces (Global Workbench WatchTower plugin). A damaged ledger appears as state 'invalid' with its failure code, never as healthy.",
+  "type": "object",
+  "required": [
+    "schema",
+    "generated_utc",
+    "settings_schema",
+    "verifier",
+    "ledgers",
+    "devices",
+    "services",
+    "outbox",
+    "last_ingest"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.evidence_index.v1"
+    },
+    "generated_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "settings_schema": {
+      "const": "watchtower.settings.v1"
+    },
+    "verifier": {
+      "type": "object",
+      "required": [
+        "principal",
+        "key_id",
+        "node_id"
+      ],
+      "properties": {
+        "principal": {
+          "const": "single-tenant/watchtower_authority/authority/watchtower",
+          "description": "WatchTower's NeverLost principal."
+        },
+        "key_id": {
+          "const": "watchtower-authority-ed25519"
+        },
+        "node_id": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{64})?$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ledgers": {
+      "type": "object",
+      "required": [
+        "telemetry_receipts",
+        "alerts",
+        "checkpoints",
+        "pledges"
+      ],
+      "properties": {
+        "telemetry_receipts": {
+          "type": "object",
+          "required": [
+            "path",
+            "state",
+            "count",
+            "head"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "state": {
+              "enum": [
+                "verified",
+                "invalid"
+              ]
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "head": {
+              "type": "string",
+              "pattern": "^(|GENESIS|[0-9a-f]{64})$"
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "alerts": {
+          "type": "object",
+          "required": [
+            "path",
+            "state",
+            "count",
+            "head"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "state": {
+              "enum": [
+                "verified",
+                "invalid"
+              ]
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "head": {
+              "type": "string",
+              "pattern": "^(|GENESIS|[0-9a-f]{64})$"
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "checkpoints": {
+          "type": "object",
+          "required": [
+            "path",
+            "state",
+            "count",
+            "head"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "state": {
+              "enum": [
+                "verified",
+                "invalid"
+              ]
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "head": {
+              "type": "string",
+              "pattern": "^(|GENESIS|[0-9a-f]{64})$"
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "pledges": {
+          "type": "object",
+          "required": [
+            "path",
+            "state",
+            "count",
+            "head"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "state": {
+              "enum": [
+                "verified",
+                "invalid"
+              ]
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "head": {
+              "type": "string",
+              "pattern": "^(|GENESIS|[0-9a-f]{64})$"
+            },
+            "code": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "device_id",
+          "folder",
+          "documents"
+        ],
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "maxLength": 270
+          },
+          "folder": {
+            "type": "string",
+            "minLength": 1
+          },
+          "documents": {
+            "type": "object",
+            "properties": {
+              "heartbeat": {
+                "type": "string",
+                "minLength": 1
+              },
+              "health_report": {
+                "type": "string",
+                "minLength": 1
+              },
+              "policy_attest": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "service_id",
+          "latest_health_report",
+          "report_count"
+        ],
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "latest_health_report": {
+            "type": "string",
+            "minLength": 1
+          },
+          "report_count": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "outbox": {
+      "type": "object",
+      "required": [
+        "path",
+        "packet_count"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packet_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "last_ingest": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

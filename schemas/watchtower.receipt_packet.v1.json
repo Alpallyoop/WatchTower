@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.receipt_packet.v1.json",
+  "title": "NFL receipt packet manifest",
+  "description": "manifest.json of the PCv1 Option A packet WatchTower publishes to packets/outbox/<packet_id> for NFL (CPR-verified, then witnessed). signatures/manifest.sig signs these bytes (namespace packet/envelope); signatures/receipt.ed25519.sig signs receipt_id + LF (namespace watchtower).",
+  "type": "object",
+  "required": [
+    "schema",
+    "constitution",
+    "kind",
+    "producer",
+    "producer_instance",
+    "created_time",
+    "receipt_id",
+    "files"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.receipt_packet.v1"
+    },
+    "constitution": {
+      "const": "packet_constitution_v1_option_a"
+    },
+    "kind": {
+      "const": "telemetry_receipts"
+    },
+    "producer": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower",
+      "description": "WatchTower's NeverLost principal."
+    },
+    "producer_instance": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "WatchTower node id."
+    },
+    "created_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^payload/"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "not": {
+    "required": [
+      "packet_id"
+    ]
+  }
+}

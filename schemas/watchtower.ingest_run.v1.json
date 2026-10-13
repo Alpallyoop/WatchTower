@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.ingest_run.v1.json",
+  "title": "Ingest run record",
+  "description": "runtime/last_ingest.json, rewritten by every ingest run.",
+  "type": "object",
+  "required": [
+    "schema",
+    "run_time",
+    "verifier",
+    "node_id",
+    "processed",
+    "accepted",
+    "rejected",
+    "ignored",
+    "receipts_head_hash",
+    "receipt_count",
+    "alerts_head_hash",
+    "alert_count",
+    "checkpoint_hash",
+    "outbox_packet_id",
+    "pledge_hash",
+    "results"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.ingest_run.v1"
+    },
+    "run_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "verifier": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower",
+      "description": "WatchTower's NeverLost principal."
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "processed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "accepted": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rejected": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ignored": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 270
+      }
+    },
+    "receipts_head_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "receipt_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "alerts_head_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "alert_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checkpoint_hash": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "outbox_packet_id": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "pledge_hash": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "packet_ref",
+          "verify_result",
+          "code",
+          "packet_id",
+          "routed_to",
+          "receipt_hash"
+        ],
+        "properties": {
+          "packet_ref": {
+            "type": "string",
+            "maxLength": 270
+          },
+          "verify_result": {
+            "enum": [
+              "ok",
+              "reject"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "packet_id": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{64})?$"
+          },
+          "routed_to": {
+            "type": "string",
+            "minLength": 1
+          },
+          "receipt_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

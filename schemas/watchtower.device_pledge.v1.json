@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.device_pledge.v1.json",
+  "title": "Device pledge",
+  "description": "AnchorMark local-pledge law: an append-only, chained, signed commitment by this WatchTower node to its receipt head, checkpoint and NFL outbox packet. Detached signature proofs/pledges/signatures/<pledge_hash>.sig over canonical_json(row) + LF, namespace 'watchtower/device-pledge'.",
+  "type": "object",
+  "required": [
+    "schema",
+    "pledge_time",
+    "node_id",
+    "verifier",
+    "verifier_key_id",
+    "receipts_head_hash",
+    "receipt_count",
+    "alerts_head_hash",
+    "alert_count",
+    "checkpoint_hash",
+    "outbox_packet_id",
+    "prev_pledge_hash",
+    "pledge_hash"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.device_pledge.v1"
+    },
+    "pledge_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "verifier": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower",
+      "description": "WatchTower's NeverLost principal."
+    },
+    "verifier_key_id": {
+      "const": "watchtower-authority-ed25519"
+    },
+    "receipts_head_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "receipt_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "alerts_head_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "alert_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checkpoint_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "outbox_packet_id": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "prev_pledge_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$",
+      "description": "Hash of the previous row; GENESIS for the first."
+    },
+    "pledge_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

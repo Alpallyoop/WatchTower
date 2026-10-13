@@ -1,14 +1,140 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.health_report.v1.json",
+  "title": "Verified health report",
+  "description": "Verified health. Published per device (runtime/devices/<device>/health_report.json) and per Constellation service (runtime/services/<service_id>/health_report_<observed>_<packet12>.json; registry evidence_sources 'health' facet, read by Constellation oversight). Freshness comes from observed_utc only: no generated_utc is ever written. Properties after details were added in v2.0.0 (additive, optional).",
   "schema": "watchtower.health_report.v1",
   "type": "object",
-  "required": ["schema","device_id","observed_utc","health_ok"],
+  "required": [
+    "schema",
+    "device_id",
+    "observed_utc",
+    "health_ok"
+  ],
   "properties": {
-    "schema": { "const": "watchtower.health_report.v1" },
-    "device_id": { "type": "string", "minLength": 1 },
-    "observed_utc": { "type": "string", "minLength": 20 },
-    "health_ok": { "type": "boolean" },
-    "degraded": { "type": "boolean" },
-    "failure_count": { "type": "integer", "minimum": 0 },
-    "details": { "type": "string" }
+    "schema": {
+      "const": "watchtower.health_report.v1"
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observed_utc": {
+      "type": "string",
+      "minLength": 20
+    },
+    "health_ok": {
+      "type": "boolean"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "failure_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "details": {
+      "type": "string"
+    },
+    "proof_status": {
+      "enum": [
+        "verified",
+        "self-check"
+      ],
+      "description": "verified: projected from a signer-verified telemetry receipt. self-check: WatchTower's own doctor."
+    },
+    "verification": {
+      "type": "object",
+      "description": "Who verified this document, when, and the receipt that authorises it. Absent receipt fields mean a self-check (doctor), not a producer observation.",
+      "required": [
+        "verifier",
+        "verifier_key_id",
+        "node_id",
+        "verified_utc"
+      ],
+      "properties": {
+        "verifier": {
+          "const": "single-tenant/watchtower_authority/authority/watchtower",
+          "description": "WatchTower's NeverLost principal."
+        },
+        "verifier_key_id": {
+          "const": "watchtower-authority-ed25519"
+        },
+        "node_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "verified_utc": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        },
+        "receipt_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "packet_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "event_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "producer_instance": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "service_id": {
+      "type": "string"
+    },
+    "health_status": {
+      "enum": [
+        "ok",
+        "degraded",
+        "fail"
+      ]
+    },
+    "posture_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "ok",
+          "code",
+          "detail"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 526
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Doctor checks (self-check reports only)."
+    }
   }
 }
