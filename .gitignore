@@ -61,3 +61,13 @@ runtime/
 # Test reports written with -ReportPath
 watchtower-test-run.json
 test-report.json
+
+# Data migrated from %LOCALAPPDATA% (WatchTowerCLI, WatchTowerInspector): machine-local, large
+_appdata_migrated/
+
+# v1 inspector UI build output and bridge smoke/probe logs
+ui/dist/
+ui/src-tauri/target/
+ui/workbench/*.stdout.txt
+ui/workbench/*.stderr.txt
+ui/workbench/*_probe.json

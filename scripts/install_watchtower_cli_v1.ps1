@@ -4,7 +4,7 @@ param(
   [switch]$UseLocalRelease
 )
 
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 
 function WT-Die([string]$m){
@@ -33,7 +33,38 @@ function WT-RemoveIfExists([string]$p){
   }
 }
 
-$zipUrl = "https://github.com/ScrappyHub/WatchTower/releases/download/watchtower-cli-v1.0.0/watchtower_cli_v1.zip"
+function WT-AddToUserPath([string]$Dir){
+  $current = [Environment]::GetEnvironmentVariable("Path","User")
+  if($null -eq $current){ $current = "" }
+
+  $parts = @($current -split ";" | Where-Object { $_ -and $_.Trim().Length -gt 0 })
+  $exists = $false
+
+  foreach($p in $parts){
+    if($p.Trim().ToLowerInvariant() -eq $Dir.Trim().ToLowerInvariant()){
+      $exists = $true
+      break
+    }
+  }
+
+  if(-not $exists){
+    $newPath = if([string]::IsNullOrWhiteSpace($current)){
+      $Dir
+    }
+    else {
+      $current.TrimEnd(";") + ";" + $Dir
+    }
+    [Environment]::SetEnvironmentVariable("Path",$newPath,"User")
+  }
+
+  $userPath = [Environment]::GetEnvironmentVariable("Path","User")
+  $machinePath = [Environment]::GetEnvironmentVariable("Path","Machine")
+  if($null -eq $userPath){ $userPath = "" }
+  if($null -eq $machinePath){ $machinePath = "" }
+  $env:PATH = $userPath + ";" + $machinePath
+}
+
+$zipUrl = "https://github.com/ScrappyHub/WatchTower/releases/download/watchtower-cli-v1.0.1/watchtower_cli_v1.zip"
 
 if([string]::IsNullOrWhiteSpace($RepoRoot)){
   $RepoRoot = Split-Path -Parent $PSScriptRoot
@@ -64,7 +95,6 @@ else {
 Expand-Archive -LiteralPath $tempZip -DestinationPath $tempExtract -Force
 
 $dirs = @(Get-ChildItem -LiteralPath $tempExtract -Directory -ErrorAction SilentlyContinue)
-
 if(@($dirs).Count -eq 1){
   $bundleRoot = $dirs[0].FullName
 }
@@ -81,13 +111,64 @@ $finalRoot = Join-Path $InstallRoot "watchtower_cli_v1"
 WT-RemoveIfExists $finalRoot
 Copy-Item -LiteralPath $bundleRoot -Destination $finalRoot -Recurse -Force
 
-$launcher = Join-Path $InstallRoot "watchtower.cmd"
+$watchtowerCmd = Join-Path $InstallRoot "watchtower.cmd"
+$watchtowerCliCmd = Join-Path $InstallRoot "watchtower-cli.cmd"
+$cliScript = Join-Path $finalRoot "scripts\watchtower_cli_v1.ps1"
+
 $launcherTxt = '@echo off' + "`n" +
-'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + (Join-Path $finalRoot 'scripts\watchtower_cli_v1.ps1') + '" -RepoRoot "' + $finalRoot + '" %*'
-WT-WriteUtf8NoBomLf -Path $launcher -Text $launcherTxt
+'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + $cliScript + '" -RepoRoot "' + $finalRoot + '" %*'
+
+WT-WriteUtf8NoBomLf -Path $watchtowerCmd -Text $launcherTxt
+WT-WriteUtf8NoBomLf -Path $watchtowerCliCmd -Text $launcherTxt
+
+$uninstallPath = Join-Path $InstallRoot "uninstall_watchtower_cli_v1.ps1"
+$uninstallTxt = @'
+param(
+  [string]$InstallRoot = "$env:LOCALAPPDATA\WatchTowerCLI"
+)
+
+Set-StrictMode -Version 3.0
+$ErrorActionPreference = "Stop"
+
+$bundle = Join-Path $InstallRoot "watchtower_cli_v1"
+$cmd1 = Join-Path $InstallRoot "watchtower.cmd"
+$cmd2 = Join-Path $InstallRoot "watchtower-cli.cmd"
+
+if(Test-Path -LiteralPath $bundle){ Remove-Item -LiteralPath $bundle -Recurse -Force }
+if(Test-Path -LiteralPath $cmd1){ Remove-Item -LiteralPath $cmd1 -Force }
+if(Test-Path -LiteralPath $cmd2){ Remove-Item -LiteralPath $cmd2 -Force }
+
+$current = [Environment]::GetEnvironmentVariable("Path","User")
+if($null -eq $current){ $current = "" }
+$parts = @($current -split ";" | Where-Object { $_ -and $_.Trim().Length -gt 0 })
+$filtered = @()
+foreach($p in $parts){
+  if($p.Trim().ToLowerInvariant() -ne $InstallRoot.Trim().ToLowerInvariant()){
+    $filtered += $p
+  }
+}
+[Environment]::SetEnvironmentVariable("Path",($filtered -join ";"),"User")
+
+Write-Host "WATCHTOWER_CLI_UNINSTALL_OK" -ForegroundColor Green
+Write-Host ("INSTALL_ROOT: " + $InstallRoot) -ForegroundColor Green
+'@
+WT-WriteUtf8NoBomLf -Path $uninstallPath -Text $uninstallTxt
+
+WT-AddToUserPath $InstallRoot
+
+
+
+
 
 Write-Host "WATCHTOWER_CLI_INSTALL_OK" -ForegroundColor Green
 Write-Host ("INSTALL_ROOT: " + $InstallRoot) -ForegroundColor Green
 Write-Host ("BUNDLE_ROOT: " + $finalRoot) -ForegroundColor Green
-Write-Host ("LAUNCHER: " + $launcher) -ForegroundColor Green
-Write-Host "TRY: watchtower.cmd quick-check" -ForegroundColor Green
+Write-Host ("LAUNCHER: " + $watchtowerCmd) -ForegroundColor Green
+Write-Host ("COMPAT_LAUNCHER: " + $watchtowerCliCmd) -ForegroundColor Green
+Write-Host ("UNINSTALLER: " + $uninstallPath) -ForegroundColor Green
+Write-Host "TRY_NOW: watchtower version" -ForegroundColor Green
+Write-Host "TRY_NOW: watchtower doctor" -ForegroundColor Green
+Write-Host "TRY_NOW: watchtower status" -ForegroundColor Green
+Write-Host "TRY_NOW: watchtower receipts summary" -ForegroundColor Green
+Write-Host "TRY_NOW: watchtower quick-check" -ForegroundColor Green
+Write-Host "REMOTE_INSTALL: iwr https://raw.githubusercontent.com/ScrappyHub/WatchTower/master/scripts/install_watchtower_cli_v1.ps1 | iex" -ForegroundColor Green

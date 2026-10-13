@@ -1,0 +1,52 @@
+body {
+  margin: 0;
+  background: #050507;
+  color: #e5e7eb;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.wt-app {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+
+.wt-sidebar {
+  background: #0a0a0c;
+  border-right: 1px solid #222;
+  padding: 16px;
+}
+
+.wt-nav-item {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 6px;
+  background: transparent;
+  color: #9ca3af;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.wt-nav-item.active {
+  color: #ffffff;
+  border-color: #333;
+  background: #111;
+}
+
+.wt-main {
+  padding: 14px;
+}
+
+.wt-terminal {
+  height: 100vh;
+  margin: 0;
+  padding: 18px;
+  overflow: auto;
+  background: #020203;
+  border: 1px solid #222;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

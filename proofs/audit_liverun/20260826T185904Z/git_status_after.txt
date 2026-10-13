@@ -1,0 +1,807 @@
+ M proofs/state/watchtower_state.json
+ M release/watchtower_cli_v1.zip
+ M release/watchtower_cli_v1/docs/README_watchtower_cli_v1.md
+ M release/watchtower_cli_v1/scripts/watchtower_cli_v1.ps1
+ M release/watchtower_cli_v1/sha256sums.txt
+ M scripts/_RUN_watchtower_cli_release_bundle_v1.ps1
+ M scripts/install_watchtower_cli_v1.ps1
+ M scripts/watchtower_cli_v1.ps1
+ M ui/index.html
+ M ui/node_modules/.package-lock.json
+ M ui/node_modules/.vite/deps/_metadata.json
+ M ui/node_modules/@babel/compat-data/data/corejs2-built-ins.json
+ M ui/node_modules/@babel/compat-data/data/overlapping-plugins.json
+ M ui/node_modules/@babel/compat-data/data/plugin-bugfixes.json
+ M ui/node_modules/@babel/compat-data/data/plugins.json
+ M ui/node_modules/@babel/compat-data/package.json
+ M ui/node_modules/@babel/parser/lib/index.js
+ M ui/node_modules/@babel/parser/lib/index.js.map
+ M ui/node_modules/@babel/parser/package.json
+ M ui/node_modules/@rollup/rollup-win32-x64-gnu/package.json
+ M ui/node_modules/@rollup/rollup-win32-x64-gnu/rollup.win32-x64-gnu.node
+ M ui/node_modules/@rollup/rollup-win32-x64-msvc/package.json
+ M ui/node_modules/@rollup/rollup-win32-x64-msvc/rollup.win32-x64-msvc.node
+ M ui/node_modules/baseline-browser-mapping/dist/index.cjs
+ M ui/node_modules/baseline-browser-mapping/dist/index.js
+ M ui/node_modules/baseline-browser-mapping/package.json
+ M ui/node_modules/caniuse-lite/data/agents.js
+ M ui/node_modules/caniuse-lite/data/browserVersions.js
+ M ui/node_modules/caniuse-lite/data/features/aac.js
+ M ui/node_modules/caniuse-lite/data/features/abortcontroller.js
+ M ui/node_modules/caniuse-lite/data/features/ac3-ec3.js
+ M ui/node_modules/caniuse-lite/data/features/accelerometer.js
+ M ui/node_modules/caniuse-lite/data/features/addeventlistener.js
+ M ui/node_modules/caniuse-lite/data/features/alternate-stylesheet.js
+ M ui/node_modules/caniuse-lite/data/features/ambient-light.js
+ M ui/node_modules/caniuse-lite/data/features/apng.js
+ M ui/node_modules/caniuse-lite/data/features/array-find-index.js
+ M ui/node_modules/caniuse-lite/data/features/array-find.js
+ M ui/node_modules/caniuse-lite/data/features/array-flat.js
+ M ui/node_modules/caniuse-lite/data/features/array-includes.js
+ M ui/node_modules/caniuse-lite/data/features/arrow-functions.js
+ M ui/node_modules/caniuse-lite/data/features/asmjs.js
+ M ui/node_modules/caniuse-lite/data/features/async-clipboard.js
+ M ui/node_modules/caniuse-lite/data/features/async-functions.js
+ M ui/node_modules/caniuse-lite/data/features/atob-btoa.js
+ M ui/node_modules/caniuse-lite/data/features/audio-api.js
+ M ui/node_modules/caniuse-lite/data/features/audio.js
+ M ui/node_modules/caniuse-lite/data/features/audiotracks.js
+ M ui/node_modules/caniuse-lite/data/features/autofocus.js
+ M ui/node_modules/caniuse-lite/data/features/auxclick.js
+ M ui/node_modules/caniuse-lite/data/features/av1.js
+ M ui/node_modules/caniuse-lite/data/features/avif.js
+ M ui/node_modules/caniuse-lite/data/features/background-attachment.js
+ M ui/node_modules/caniuse-lite/data/features/background-clip-text.js
+ M ui/node_modules/caniuse-lite/data/features/background-img-opts.js
+ M ui/node_modules/caniuse-lite/data/features/background-position-x-y.js
+ M ui/node_modules/caniuse-lite/data/features/background-repeat-round-space.js
+ M ui/node_modules/caniuse-lite/data/features/background-sync.js
+ M ui/node_modules/caniuse-lite/data/features/battery-status.js
+ M ui/node_modules/caniuse-lite/data/features/beacon.js
+ M ui/node_modules/caniuse-lite/data/features/beforeafterprint.js
+ M ui/node_modules/caniuse-lite/data/features/bigint.js
+ M ui/node_modules/caniuse-lite/data/features/blobbuilder.js
+ M ui/node_modules/caniuse-lite/data/features/bloburls.js
+ M ui/node_modules/caniuse-lite/data/features/border-image.js
+ M ui/node_modules/caniuse-lite/data/features/border-radius.js
+ M ui/node_modules/caniuse-lite/data/features/broadcastchannel.js
+ M ui/node_modules/caniuse-lite/data/features/brotli.js
+ M ui/node_modules/caniuse-lite/data/features/calc.js
+ M ui/node_modules/caniuse-lite/data/features/canvas-blending.js
+ M ui/node_modules/caniuse-lite/data/features/canvas-text.js
+ M ui/node_modules/caniuse-lite/data/features/canvas.js
+ M ui/node_modules/caniuse-lite/data/features/ch-unit.js
+ M ui/node_modules/caniuse-lite/data/features/chacha20-poly1305.js
+ M ui/node_modules/caniuse-lite/data/features/channel-messaging.js
+ M ui/node_modules/caniuse-lite/data/features/childnode-remove.js
+ M ui/node_modules/caniuse-lite/data/features/classlist.js
+ M ui/node_modules/caniuse-lite/data/features/client-hints-dpr-width-viewport.js
+ M ui/node_modules/caniuse-lite/data/features/clipboard.js
+ M ui/node_modules/caniuse-lite/data/features/colr-v1.js
+ M ui/node_modules/caniuse-lite/data/features/colr.js
+ M ui/node_modules/caniuse-lite/data/features/comparedocumentposition.js
+ M ui/node_modules/caniuse-lite/data/features/console-basic.js
+ M ui/node_modules/caniuse-lite/data/features/console-time.js
+ M ui/node_modules/caniuse-lite/data/features/const.js
+ M ui/node_modules/caniuse-lite/data/features/constraint-validation.js
+ M ui/node_modules/caniuse-lite/data/features/contenteditable.js
+ M ui/node_modules/caniuse-lite/data/features/contentsecuritypolicy.js
+ M ui/node_modules/caniuse-lite/data/features/contentsecuritypolicy2.js
+ M ui/node_modules/caniuse-lite/data/features/cookie-store-api.js
+ M ui/node_modules/caniuse-lite/data/features/cors.js
+ M ui/node_modules/caniuse-lite/data/features/createimagebitmap.js
+ M ui/node_modules/caniuse-lite/data/features/credential-management.js
+ M ui/node_modules/caniuse-lite/data/features/cross-document-view-transitions.js
+ M ui/node_modules/caniuse-lite/data/features/cryptography.js
+ M ui/node_modules/caniuse-lite/data/features/css-all.js
+ M ui/node_modules/caniuse-lite/data/features/css-anchor-positioning.js
+ M ui/node_modules/caniuse-lite/data/features/css-animation.js
+ M ui/node_modules/caniuse-lite/data/features/css-any-link.js
+ M ui/node_modules/caniuse-lite/data/features/css-appearance.js
+ M ui/node_modules/caniuse-lite/data/features/css-at-counter-style.js
+ M ui/node_modules/caniuse-lite/data/features/css-autofill.js
+ M ui/node_modules/caniuse-lite/data/features/css-backdrop-filter.js
+ M ui/node_modules/caniuse-lite/data/features/css-background-offsets.js
+ M ui/node_modules/caniuse-lite/data/features/css-backgroundblendmode.js
+ M ui/node_modules/caniuse-lite/data/features/css-boxdecorationbreak.js
+ M ui/node_modules/caniuse-lite/data/features/css-boxshadow.js
+ M ui/node_modules/caniuse-lite/data/features/css-canvas.js
+ M ui/node_modules/caniuse-lite/data/features/css-caret-color.js
+ M ui/node_modules/caniuse-lite/data/features/css-cascade-layers.js
+ M ui/node_modules/caniuse-lite/data/features/css-cascade-scope.js
+ M ui/node_modules/caniuse-lite/data/features/css-case-insensitive.js
+ M ui/node_modules/caniuse-lite/data/features/css-clip-path.js
+ M ui/node_modules/caniuse-lite/data/features/css-color-adjust.js
+ M ui/node_modules/caniuse-lite/data/features/css-color-function.js
+ M ui/node_modules/caniuse-lite/data/features/css-conic-gradients.js
+ M ui/node_modules/caniuse-lite/data/features/css-container-queries-style.js
+ M ui/node_modules/caniuse-lite/data/features/css-container-queries.js
+ M ui/node_modules/caniuse-lite/data/features/css-container-query-units.js
+ M ui/node_modules/caniuse-lite/data/features/css-containment.js
+ M ui/node_modules/caniuse-lite/data/features/css-content-visibility.js
+ M ui/node_modules/caniuse-lite/data/features/css-counters.js
+ M ui/node_modules/caniuse-lite/data/features/css-crisp-edges.js
+ M ui/node_modules/caniuse-lite/data/features/css-cross-fade.js
+ M ui/node_modules/caniuse-lite/data/features/css-default-pseudo.js
+ M ui/node_modules/caniuse-lite/data/features/css-descendant-gtgt.js
+ M ui/node_modules/caniuse-lite/data/features/css-deviceadaptation.js
+ M ui/node_modules/caniuse-lite/data/features/css-dir-pseudo.js
+ M ui/node_modules/caniuse-lite/data/features/css-display-contents.js
+ M ui/node_modules/caniuse-lite/data/features/css-element-function.js
+ M ui/node_modules/caniuse-lite/data/features/css-env-function.js
+ M ui/node_modules/caniuse-lite/data/features/css-exclusions.js
+ M ui/node_modules/caniuse-lite/data/features/css-featurequeries.js
+ M ui/node_modules/caniuse-lite/data/features/css-file-selector-button.js
+ M ui/node_modules/caniuse-lite/data/features/css-filter-function.js
+ M ui/node_modules/caniuse-lite/data/features/css-filters.js
+ M ui/node_modules/caniuse-lite/data/features/css-first-letter.js
+ M ui/node_modules/caniuse-lite/data/features/css-first-line.js
+ M ui/node_modules/caniuse-lite/data/features/css-fixed.js
+ M ui/node_modules/caniuse-lite/data/features/css-focus-visible.js
+ M ui/node_modules/caniuse-lite/data/features/css-focus-within.js
+ M ui/node_modules/caniuse-lite/data/features/css-font-palette.js
+ M ui/node_modules/caniuse-lite/data/features/css-font-rendering-controls.js
+ M ui/node_modules/caniuse-lite/data/features/css-font-stretch.js
+ M ui/node_modules/caniuse-lite/data/features/css-gencontent.js
+ M ui/node_modules/caniuse-lite/data/features/css-gradients.js
+ M ui/node_modules/caniuse-lite/data/features/css-grid-animation.js
+ M ui/node_modules/caniuse-lite/data/features/css-grid-lanes.js
+ M ui/node_modules/caniuse-lite/data/features/css-grid.js
+ M ui/node_modules/caniuse-lite/data/features/css-hanging-punctuation.js
+ M ui/node_modules/caniuse-lite/data/features/css-has.js
+ M ui/node_modules/caniuse-lite/data/features/css-hyphens.js
+ M ui/node_modules/caniuse-lite/data/features/css-if.js
+ M ui/node_modules/caniuse-lite/data/features/css-image-orientation.js
+ M ui/node_modules/caniuse-lite/data/features/css-image-set.js
+ M ui/node_modules/caniuse-lite/data/features/css-in-out-of-range.js
+ M ui/node_modules/caniuse-lite/data/features/css-indeterminate-pseudo.js
+ M ui/node_modules/caniuse-lite/data/features/css-initial-letter.js
+ M ui/node_modules/caniuse-lite/data/features/css-initial-value.js
+ M ui/node_modules/caniuse-lite/data/features/css-lch-lab.js
+ M ui/node_modules/caniuse-lite/data/features/css-letter-spacing.js
+ M ui/node_modules/caniuse-lite/data/features/css-line-clamp.js
+ M ui/node_modules/caniuse-lite/data/features/css-logical-props.js
+ M ui/node_modules/caniuse-lite/data/features/css-marker-pseudo.js
+ M ui/node_modules/caniuse-lite/data/features/css-masks.js
+ M ui/node_modules/caniuse-lite/data/features/css-matches-pseudo.js
+ M ui/node_modules/caniuse-lite/data/features/css-math-functions.js
+ M ui/node_modules/caniuse-lite/data/features/css-media-interaction.js
+ M ui/node_modules/caniuse-lite/data/features/css-media-range-syntax.js
+ M ui/node_modules/caniuse-lite/data/features/css-media-resolution.js
+ M ui/node_modules/caniuse-lite/data/features/css-media-scripting.js
+ M ui/node_modules/caniuse-lite/data/features/css-mediaqueries.js
+ M ui/node_modules/caniuse-lite/data/features/css-mixblendmode.js
+ M ui/node_modules/caniuse-lite/data/features/css-module-scripts.js
+ M ui/node_modules/caniuse-lite/data/features/css-motion-paths.js
+ M ui/node_modules/caniuse-lite/data/features/css-namespaces.js
+ M ui/node_modules/caniuse-lite/data/features/css-nesting.js
+ M ui/node_modules/caniuse-lite/data/features/css-not-sel-list.js
+ M ui/node_modules/caniuse-lite/data/features/css-nth-child-of.js
+ M ui/node_modules/caniuse-lite/data/features/css-opacity.js
+ M ui/node_modules/caniuse-lite/data/features/css-optional-pseudo.js
+ M ui/node_modules/caniuse-lite/data/features/css-overflow-anchor.js
+ M ui/node_modules/caniuse-lite/data/features/css-overflow-overlay.js
+ M ui/node_modules/caniuse-lite/data/features/css-overflow.js
+ M ui/node_modules/caniuse-lite/data/features/css-overscroll-behavior.js
+ M ui/node_modules/caniuse-lite/data/features/css-page-break.js
+ M ui/node_modules/caniuse-lite/data/features/css-paged-media.js
+ M ui/node_modules/caniuse-lite/data/features/css-paint-api.js
+ M ui/node_modules/caniuse-lite/data/features/css-placeholder-shown.js
+ M ui/node_modules/caniuse-lite/data/features/css-placeholder.js
+ M ui/node_modules/caniuse-lite/data/features/css-print-color-adjust.js
+ M ui/node_modules/caniuse-lite/data/features/css-read-only-write.js
+ M ui/node_modules/caniuse-lite/data/features/css-rebeccapurple.js
+ M ui/node_modules/caniuse-lite/data/features/css-reflections.js
+ M ui/node_modules/caniuse-lite/data/features/css-regions.js
+ M ui/node_modules/caniuse-lite/data/features/css-relative-colors.js
+ M ui/node_modules/caniuse-lite/data/features/css-repeating-gradients.js
+ M ui/node_modules/caniuse-lite/data/features/css-resize.js
+ M ui/node_modules/caniuse-lite/data/features/css-revert-value.js
+ M ui/node_modules/caniuse-lite/data/features/css-rrggbbaa.js
+ M ui/node_modules/caniuse-lite/data/features/css-scroll-behavior.js
+ M ui/node_modules/caniuse-lite/data/features/css-scrollbar.js
+ M ui/node_modules/caniuse-lite/data/features/css-sel2.js
+ M ui/node_modules/caniuse-lite/data/features/css-sel3.js
+ M ui/node_modules/caniuse-lite/data/features/css-selection.js
+ M ui/node_modules/caniuse-lite/data/features/css-shapes.js
+ M ui/node_modules/caniuse-lite/data/features/css-snappoints.js
+ M ui/node_modules/caniuse-lite/data/features/css-sticky.js
+ M ui/node_modules/caniuse-lite/data/features/css-subgrid.js
+ M ui/node_modules/caniuse-lite/data/features/css-supports-api.js
+ M ui/node_modules/caniuse-lite/data/features/css-table.js
+ M ui/node_modules/caniuse-lite/data/features/css-text-align-last.js
+ M ui/node_modules/caniuse-lite/data/features/css-text-box-trim.js
+ M ui/node_modules/caniuse-lite/data/features/css-text-indent.js
+ M ui/node_modules/caniuse-lite/data/features/css-text-justify.js
+ M ui/node_modules/caniuse-lite/data/features/css-text-orientation.js
+ M ui/node_modules/caniuse-lite/data/features/css-text-spacing.js
+ M ui/node_modules/caniuse-lite/data/features/css-text-wrap-balance.js
+ M ui/node_modules/caniuse-lite/data/features/css-textshadow.js
+ M ui/node_modules/caniuse-lite/data/features/css-touch-action.js
+ M ui/node_modules/caniuse-lite/data/features/css-transitions.js
+ M ui/node_modules/caniuse-lite/data/features/css-unicode-bidi.js
+ M ui/node_modules/caniuse-lite/data/features/css-unset-value.js
+ M ui/node_modules/caniuse-lite/data/features/css-variables.js
+ M ui/node_modules/caniuse-lite/data/features/css-when-else.js
+ M ui/node_modules/caniuse-lite/data/features/css-widows-orphans.js
+ M ui/node_modules/caniuse-lite/data/features/css-width-stretch.js
+ M ui/node_modules/caniuse-lite/data/features/css-writing-mode.js
+ M ui/node_modules/caniuse-lite/data/features/css-zoom.js
+ M ui/node_modules/caniuse-lite/data/features/css3-attr.js
+ M ui/node_modules/caniuse-lite/data/features/css3-boxsizing.js
+ M ui/node_modules/caniuse-lite/data/features/css3-colors.js
+ M ui/node_modules/caniuse-lite/data/features/css3-cursors-grab.js
+ M ui/node_modules/caniuse-lite/data/features/css3-cursors-newer.js
+ M ui/node_modules/caniuse-lite/data/features/css3-cursors.js
+ M ui/node_modules/caniuse-lite/data/features/css3-tabsize.js
+ M ui/node_modules/caniuse-lite/data/features/currentcolor.js
+ M ui/node_modules/caniuse-lite/data/features/custom-elements.js
+ M ui/node_modules/caniuse-lite/data/features/custom-elementsv1.js
+ M ui/node_modules/caniuse-lite/data/features/customevent.js
+ M ui/node_modules/caniuse-lite/data/features/customizable-select.js
+ M ui/node_modules/caniuse-lite/data/features/datalist.js
+ M ui/node_modules/caniuse-lite/data/features/dataset.js
+ M ui/node_modules/caniuse-lite/data/features/datauri.js
+ M ui/node_modules/caniuse-lite/data/features/date-tolocaledatestring.js
+ M ui/node_modules/caniuse-lite/data/features/declarative-shadow-dom.js
+ M ui/node_modules/caniuse-lite/data/features/decorators.js
+ M ui/node_modules/caniuse-lite/data/features/details.js
+ M ui/node_modules/caniuse-lite/data/features/deviceorientation.js
+ M ui/node_modules/caniuse-lite/data/features/devicepixelratio.js
+ M ui/node_modules/caniuse-lite/data/features/dialog.js
+ M ui/node_modules/caniuse-lite/data/features/dispatchevent.js
+ M ui/node_modules/caniuse-lite/data/features/dnssec.js
+ M ui/node_modules/caniuse-lite/data/features/do-not-track.js
+ M ui/node_modules/caniuse-lite/data/features/document-currentscript.js
+ M ui/node_modules/caniuse-lite/data/features/document-evaluate-xpath.js
+ M ui/node_modules/caniuse-lite/data/features/document-execcommand.js
+ M ui/node_modules/caniuse-lite/data/features/document-policy.js
+ M ui/node_modules/caniuse-lite/data/features/document-scrollingelement.js
+ M ui/node_modules/caniuse-lite/data/features/documenthead.js
+ M ui/node_modules/caniuse-lite/data/features/dom-manip-convenience.js
+ M ui/node_modules/caniuse-lite/data/features/dom-range.js
+ M ui/node_modules/caniuse-lite/data/features/domcontentloaded.js
+ M ui/node_modules/caniuse-lite/data/features/dommatrix.js
+ M ui/node_modules/caniuse-lite/data/features/download.js
+ M ui/node_modules/caniuse-lite/data/features/dragndrop.js
+ M ui/node_modules/caniuse-lite/data/features/element-closest.js
+ M ui/node_modules/caniuse-lite/data/features/element-from-point.js
+ M ui/node_modules/caniuse-lite/data/features/element-scroll-methods.js
+ M ui/node_modules/caniuse-lite/data/features/eme.js
+ M ui/node_modules/caniuse-lite/data/features/eot.js
+ M ui/node_modules/caniuse-lite/data/features/es5.js
+ M ui/node_modules/caniuse-lite/data/features/es6-class.js
+ M ui/node_modules/caniuse-lite/data/features/es6-generators.js
+ M ui/node_modules/caniuse-lite/data/features/es6-module-dynamic-import.js
+ M ui/node_modules/caniuse-lite/data/features/es6-module.js
+ M ui/node_modules/caniuse-lite/data/features/es6-number.js
+ M ui/node_modules/caniuse-lite/data/features/es6-string-includes.js
+ M ui/node_modules/caniuse-lite/data/features/es6.js
+ M ui/node_modules/caniuse-lite/data/features/eventsource.js
+ M ui/node_modules/caniuse-lite/data/features/extended-system-fonts.js
+ M ui/node_modules/caniuse-lite/data/features/feature-policy.js
+ M ui/node_modules/caniuse-lite/data/features/fetch.js
+ M ui/node_modules/caniuse-lite/data/features/fieldset-disabled.js
+ M ui/node_modules/caniuse-lite/data/features/fileapi.js
+ M ui/node_modules/caniuse-lite/data/features/filereader.js
+ M ui/node_modules/caniuse-lite/data/features/filereadersync.js
+ M ui/node_modules/caniuse-lite/data/features/filesystem.js
+ M ui/node_modules/caniuse-lite/data/features/flac.js
+ M ui/node_modules/caniuse-lite/data/features/flexbox-gap.js
+ M ui/node_modules/caniuse-lite/data/features/flexbox.js
+ M ui/node_modules/caniuse-lite/data/features/flow-root.js
+ M ui/node_modules/caniuse-lite/data/features/focusin-focusout-events.js
+ M ui/node_modules/caniuse-lite/data/features/font-family-system-ui.js
+ M ui/node_modules/caniuse-lite/data/features/font-feature.js
+ M ui/node_modules/caniuse-lite/data/features/font-kerning.js
+ M ui/node_modules/caniuse-lite/data/features/font-loading.js
+ M ui/node_modules/caniuse-lite/data/features/font-size-adjust.js
+ M ui/node_modules/caniuse-lite/data/features/font-smooth.js
+ M ui/node_modules/caniuse-lite/data/features/font-unicode-range.js
+ M ui/node_modules/caniuse-lite/data/features/font-variant-alternates.js
+ M ui/node_modules/caniuse-lite/data/features/font-variant-numeric.js
+ M ui/node_modules/caniuse-lite/data/features/fontface.js
+ M ui/node_modules/caniuse-lite/data/features/form-attribute.js
+ M ui/node_modules/caniuse-lite/data/features/form-submit-attributes.js
+ M ui/node_modules/caniuse-lite/data/features/form-validation.js
+ M ui/node_modules/caniuse-lite/data/features/forms.js
+ M ui/node_modules/caniuse-lite/data/features/fullscreen.js
+ M ui/node_modules/caniuse-lite/data/features/gamepad.js
+ M ui/node_modules/caniuse-lite/data/features/geolocation.js
+ M ui/node_modules/caniuse-lite/data/features/getboundingclientrect.js
+ M ui/node_modules/caniuse-lite/data/features/getcomputedstyle.js
+ M ui/node_modules/caniuse-lite/data/features/getelementsbyclassname.js
+ M ui/node_modules/caniuse-lite/data/features/getrandomvalues.js
+ M ui/node_modules/caniuse-lite/data/features/gyroscope.js
+ M ui/node_modules/caniuse-lite/data/features/hardwareconcurrency.js
+ M ui/node_modules/caniuse-lite/data/features/hashchange.js
+ M ui/node_modules/caniuse-lite/data/features/heif.js
+ M ui/node_modules/caniuse-lite/data/features/hevc.js
+ M ui/node_modules/caniuse-lite/data/features/hidden.js
+ M ui/node_modules/caniuse-lite/data/features/high-resolution-time.js
+ M ui/node_modules/caniuse-lite/data/features/history.js
+ M ui/node_modules/caniuse-lite/data/features/html-media-capture.js
+ M ui/node_modules/caniuse-lite/data/features/html5semantic.js
+ M ui/node_modules/caniuse-lite/data/features/http-live-streaming.js
+ M ui/node_modules/caniuse-lite/data/features/http2.js
+ M ui/node_modules/caniuse-lite/data/features/http3.js
+ M ui/node_modules/caniuse-lite/data/features/iframe-sandbox.js
+ M ui/node_modules/caniuse-lite/data/features/iframe-seamless.js
+ M ui/node_modules/caniuse-lite/data/features/iframe-srcdoc.js
+ M ui/node_modules/caniuse-lite/data/features/imagecapture.js
+ M ui/node_modules/caniuse-lite/data/features/ime.js
+ M ui/node_modules/caniuse-lite/data/features/img-naturalwidth-naturalheight.js
+ M ui/node_modules/caniuse-lite/data/features/import-maps.js
+ M ui/node_modules/caniuse-lite/data/features/imports.js
+ M ui/node_modules/caniuse-lite/data/features/indeterminate-checkbox.js
+ M ui/node_modules/caniuse-lite/data/features/indexeddb.js
+ M ui/node_modules/caniuse-lite/data/features/indexeddb2.js
+ M ui/node_modules/caniuse-lite/data/features/inline-block.js
+ M ui/node_modules/caniuse-lite/data/features/innertext.js
+ M ui/node_modules/caniuse-lite/data/features/input-autocomplete-onoff.js
+ M ui/node_modules/caniuse-lite/data/features/input-color.js
+ M ui/node_modules/caniuse-lite/data/features/input-datetime.js
+ M ui/node_modules/caniuse-lite/data/features/input-email-tel-url.js
+ M ui/node_modules/caniuse-lite/data/features/input-event.js
+ M ui/node_modules/caniuse-lite/data/features/input-file-accept.js
+ M ui/node_modules/caniuse-lite/data/features/input-file-directory.js
+ M ui/node_modules/caniuse-lite/data/features/input-file-multiple.js
+ M ui/node_modules/caniuse-lite/data/features/input-inputmode.js
+ M ui/node_modules/caniuse-lite/data/features/input-minlength.js
+ M ui/node_modules/caniuse-lite/data/features/input-number.js
+ M ui/node_modules/caniuse-lite/data/features/input-pattern.js
+ M ui/node_modules/caniuse-lite/data/features/input-placeholder.js
+ M ui/node_modules/caniuse-lite/data/features/input-range.js
+ M ui/node_modules/caniuse-lite/data/features/input-search.js
+ M ui/node_modules/caniuse-lite/data/features/input-selection.js
+ M ui/node_modules/caniuse-lite/data/features/insert-adjacent.js
+ M ui/node_modules/caniuse-lite/data/features/insertadjacenthtml.js
+ M ui/node_modules/caniuse-lite/data/features/internationalization.js
+ M ui/node_modules/caniuse-lite/data/features/intersectionobserver-v2.js
+ M ui/node_modules/caniuse-lite/data/features/intersectionobserver.js
+ M ui/node_modules/caniuse-lite/data/features/intl-pluralrules.js
+ M ui/node_modules/caniuse-lite/data/features/intrinsic-width.js
+ M ui/node_modules/caniuse-lite/data/features/jpeg2000.js
+ M ui/node_modules/caniuse-lite/data/features/jpegxl.js
+ M ui/node_modules/caniuse-lite/data/features/jpegxr.js
+ M ui/node_modules/caniuse-lite/data/features/js-regexp-lookbehind.js
+ M ui/node_modules/caniuse-lite/data/features/json.js
+ M ui/node_modules/caniuse-lite/data/features/justify-content-space-evenly.js
+ M ui/node_modules/caniuse-lite/data/features/kerning-pairs-ligatures.js
+ M ui/node_modules/caniuse-lite/data/features/keyboardevent-charcode.js
+ M ui/node_modules/caniuse-lite/data/features/keyboardevent-code.js
+ M ui/node_modules/caniuse-lite/data/features/keyboardevent-getmodifierstate.js
+ M ui/node_modules/caniuse-lite/data/features/keyboardevent-key.js
+ M ui/node_modules/caniuse-lite/data/features/keyboardevent-location.js
+ M ui/node_modules/caniuse-lite/data/features/keyboardevent-which.js
+ M ui/node_modules/caniuse-lite/data/features/lazyload.js
+ M ui/node_modules/caniuse-lite/data/features/let.js
+ M ui/node_modules/caniuse-lite/data/features/link-icon-png.js
+ M ui/node_modules/caniuse-lite/data/features/link-icon-svg.js
+ M ui/node_modules/caniuse-lite/data/features/link-rel-dns-prefetch.js
+ M ui/node_modules/caniuse-lite/data/features/link-rel-modulepreload.js
+ M ui/node_modules/caniuse-lite/data/features/link-rel-preconnect.js
+ M ui/node_modules/caniuse-lite/data/features/link-rel-prefetch.js
+ M ui/node_modules/caniuse-lite/data/features/link-rel-preload.js
+ M ui/node_modules/caniuse-lite/data/features/link-rel-prerender.js
+ M ui/node_modules/caniuse-lite/data/features/loading-lazy-attr.js
+ M ui/node_modules/caniuse-lite/data/features/loading-lazy-media.js
+ M ui/node_modules/caniuse-lite/data/features/localecompare.js
+ M ui/node_modules/caniuse-lite/data/features/magnetometer.js
+ M ui/node_modules/caniuse-lite/data/features/matchesselector.js
+ M ui/node_modules/caniuse-lite/data/features/matchmedia.js
+ M ui/node_modules/caniuse-lite/data/features/mathml.js
+ M ui/node_modules/caniuse-lite/data/features/maxlength.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-css-backdrop-pseudo-element.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-css-unicode-bidi-isolate-override.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-css-unicode-bidi-isolate.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-css-unicode-bidi-plaintext.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-text-decoration-color.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-text-decoration-line.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-text-decoration-shorthand.js
+ M ui/node_modules/caniuse-lite/data/features/mdn-text-decoration-style.js
+ M ui/node_modules/caniuse-lite/data/features/media-fragments.js
+ M ui/node_modules/caniuse-lite/data/features/mediacapture-fromelement.js
+ M ui/node_modules/caniuse-lite/data/features/mediarecorder.js
+ M ui/node_modules/caniuse-lite/data/features/mediasource.js
+ M ui/node_modules/caniuse-lite/data/features/menu.js
+ M ui/node_modules/caniuse-lite/data/features/meta-theme-color.js
+ M ui/node_modules/caniuse-lite/data/features/meter.js
+ M ui/node_modules/caniuse-lite/data/features/midi.js
+ M ui/node_modules/caniuse-lite/data/features/minmaxwh.js
+ M ui/node_modules/caniuse-lite/data/features/mp3.js
+ M ui/node_modules/caniuse-lite/data/features/mpeg-dash.js
+ M ui/node_modules/caniuse-lite/data/features/mpeg4.js
+ M ui/node_modules/caniuse-lite/data/features/multibackgrounds.js
+ M ui/node_modules/caniuse-lite/data/features/multicolumn.js
+ M ui/node_modules/caniuse-lite/data/features/mutation-events.js
+ M ui/node_modules/caniuse-lite/data/features/mutationobserver.js
+ M ui/node_modules/caniuse-lite/data/features/namevalue-storage.js
+ M ui/node_modules/caniuse-lite/data/features/native-filesystem-api.js
+ M ui/node_modules/caniuse-lite/data/features/nav-timing.js
+ M ui/node_modules/caniuse-lite/data/features/netinfo.js
+ M ui/node_modules/caniuse-lite/data/features/notifications.js
+ M ui/node_modules/caniuse-lite/data/features/object-entries.js
+ M ui/node_modules/caniuse-lite/data/features/object-fit.js
+ M ui/node_modules/caniuse-lite/data/features/object-observe.js
+ M ui/node_modules/caniuse-lite/data/features/object-values.js
+ M ui/node_modules/caniuse-lite/data/features/objectrtc.js
+ M ui/node_modules/caniuse-lite/data/features/offline-apps.js
+ M ui/node_modules/caniuse-lite/data/features/offscreencanvas.js
+ M ui/node_modules/caniuse-lite/data/features/ogg-vorbis.js
+ M ui/node_modules/caniuse-lite/data/features/ogv.js
+ M ui/node_modules/caniuse-lite/data/features/ol-reversed.js
+ M ui/node_modules/caniuse-lite/data/features/once-event-listener.js
+ M ui/node_modules/caniuse-lite/data/features/online-status.js
+ M ui/node_modules/caniuse-lite/data/features/opus.js
+ M ui/node_modules/caniuse-lite/data/features/orientation-sensor.js
+ M ui/node_modules/caniuse-lite/data/features/outline.js
+ M ui/node_modules/caniuse-lite/data/features/pad-start-end.js
+ M ui/node_modules/caniuse-lite/data/features/page-transition-events.js
+ M ui/node_modules/caniuse-lite/data/features/pagevisibility.js
+ M ui/node_modules/caniuse-lite/data/features/passive-event-listener.js
+ M ui/node_modules/caniuse-lite/data/features/passkeys.js
+ M ui/node_modules/caniuse-lite/data/features/passwordrules.js
+ M ui/node_modules/caniuse-lite/data/features/path2d.js
+ M ui/node_modules/caniuse-lite/data/features/payment-request.js
+ M ui/node_modules/caniuse-lite/data/features/pdf-viewer.js
+ M ui/node_modules/caniuse-lite/data/features/permissions-api.js
+ M ui/node_modules/caniuse-lite/data/features/permissions-policy.js
+ M ui/node_modules/caniuse-lite/data/features/picture-in-picture.js
+ M ui/node_modules/caniuse-lite/data/features/picture.js
+ M ui/node_modules/caniuse-lite/data/features/ping.js
+ M ui/node_modules/caniuse-lite/data/features/png-alpha.js
+ M ui/node_modules/caniuse-lite/data/features/pointer-events.js
+ M ui/node_modules/caniuse-lite/data/features/pointer.js
+ M ui/node_modules/caniuse-lite/data/features/pointerlock.js
+ M ui/node_modules/caniuse-lite/data/features/portals.js
+ M ui/node_modules/caniuse-lite/data/features/prefers-color-scheme.js
+ M ui/node_modules/caniuse-lite/data/features/prefers-reduced-motion.js
+ M ui/node_modules/caniuse-lite/data/features/progress.js
+ M ui/node_modules/caniuse-lite/data/features/promise-finally.js
+ M ui/node_modules/caniuse-lite/data/features/promises.js
+ M ui/node_modules/caniuse-lite/data/features/proximity.js
+ M ui/node_modules/caniuse-lite/data/features/proxy.js
+ M ui/node_modules/caniuse-lite/data/features/publickeypinning.js
+ M ui/node_modules/caniuse-lite/data/features/push-api.js
+ M ui/node_modules/caniuse-lite/data/features/queryselector.js
+ M ui/node_modules/caniuse-lite/data/features/readonly-attr.js
+ M ui/node_modules/caniuse-lite/data/features/referrer-policy.js
+ M ui/node_modules/caniuse-lite/data/features/registerprotocolhandler.js
+ M ui/node_modules/caniuse-lite/data/features/rel-noopener.js
+ M ui/node_modules/caniuse-lite/data/features/rel-noreferrer.js
+ M ui/node_modules/caniuse-lite/data/features/rellist.js
+ M ui/node_modules/caniuse-lite/data/features/rem.js
+ M ui/node_modules/caniuse-lite/data/features/requestanimationframe.js
+ M ui/node_modules/caniuse-lite/data/features/requestidlecallback.js
+ M ui/node_modules/caniuse-lite/data/features/resizeobserver.js
+ M ui/node_modules/caniuse-lite/data/features/resource-timing.js
+ M ui/node_modules/caniuse-lite/data/features/rest-parameters.js
+ M ui/node_modules/caniuse-lite/data/features/rtcpeerconnection.js
+ M ui/node_modules/caniuse-lite/data/features/ruby.js
+ M ui/node_modules/caniuse-lite/data/features/run-in.js
+ M ui/node_modules/caniuse-lite/data/features/same-site-cookie-attribute.js
+ M ui/node_modules/caniuse-lite/data/features/screen-orientation.js
+ M ui/node_modules/caniuse-lite/data/features/script-async.js
+ M ui/node_modules/caniuse-lite/data/features/script-defer.js
+ M ui/node_modules/caniuse-lite/data/features/scrollintoview.js
+ M ui/node_modules/caniuse-lite/data/features/scrollintoviewifneeded.js
+ M ui/node_modules/caniuse-lite/data/features/sdch.js
+ M ui/node_modules/caniuse-lite/data/features/selection-api.js
+ M ui/node_modules/caniuse-lite/data/features/server-timing.js
+ M ui/node_modules/caniuse-lite/data/features/serviceworkers.js
+ M ui/node_modules/caniuse-lite/data/features/setimmediate.js
+ M ui/node_modules/caniuse-lite/data/features/shadowdom.js
+ M ui/node_modules/caniuse-lite/data/features/shadowdomv1.js
+ M ui/node_modules/caniuse-lite/data/features/sharedarraybuffer.js
+ M ui/node_modules/caniuse-lite/data/features/sharedworkers.js
+ M ui/node_modules/caniuse-lite/data/features/sni.js
+ M ui/node_modules/caniuse-lite/data/features/spdy.js
+ M ui/node_modules/caniuse-lite/data/features/speech-recognition.js
+ M ui/node_modules/caniuse-lite/data/features/speech-synthesis.js
+ M ui/node_modules/caniuse-lite/data/features/spellcheck-attribute.js
+ M ui/node_modules/caniuse-lite/data/features/sql-storage.js
+ M ui/node_modules/caniuse-lite/data/features/srcset.js
+ M ui/node_modules/caniuse-lite/data/features/stream.js
+ M ui/node_modules/caniuse-lite/data/features/streams.js
+ M ui/node_modules/caniuse-lite/data/features/stricttransportsecurity.js
+ M ui/node_modules/caniuse-lite/data/features/style-scoped.js
+ M ui/node_modules/caniuse-lite/data/features/subresource-bundling.js
+ M ui/node_modules/caniuse-lite/data/features/subresource-integrity.js
+ M ui/node_modules/caniuse-lite/data/features/svg-css.js
+ M ui/node_modules/caniuse-lite/data/features/svg-filters.js
+ M ui/node_modules/caniuse-lite/data/features/svg-fonts.js
+ M ui/node_modules/caniuse-lite/data/features/svg-fragment.js
+ M ui/node_modules/caniuse-lite/data/features/svg-html.js
+ M ui/node_modules/caniuse-lite/data/features/svg-html5.js
+ M ui/node_modules/caniuse-lite/data/features/svg-img.js
+ M ui/node_modules/caniuse-lite/data/features/svg-smil.js
+ M ui/node_modules/caniuse-lite/data/features/svg.js
+ M ui/node_modules/caniuse-lite/data/features/sxg.js
+ M ui/node_modules/caniuse-lite/data/features/tabindex-attr.js
+ M ui/node_modules/caniuse-lite/data/features/template-literals.js
+ M ui/node_modules/caniuse-lite/data/features/template.js
+ M ui/node_modules/caniuse-lite/data/features/temporal.js
+ M ui/node_modules/caniuse-lite/data/features/testfeat.js
+ M ui/node_modules/caniuse-lite/data/features/text-decoration.js
+ M ui/node_modules/caniuse-lite/data/features/text-emphasis.js
+ M ui/node_modules/caniuse-lite/data/features/text-overflow.js
+ M ui/node_modules/caniuse-lite/data/features/text-size-adjust.js
+ M ui/node_modules/caniuse-lite/data/features/text-stroke.js
+ M ui/node_modules/caniuse-lite/data/features/textcontent.js
+ M ui/node_modules/caniuse-lite/data/features/textencoder.js
+ M ui/node_modules/caniuse-lite/data/features/tls1-1.js
+ M ui/node_modules/caniuse-lite/data/features/tls1-2.js
+ M ui/node_modules/caniuse-lite/data/features/tls1-3.js
+ M ui/node_modules/caniuse-lite/data/features/touch.js
+ M ui/node_modules/caniuse-lite/data/features/transforms2d.js
+ M ui/node_modules/caniuse-lite/data/features/transforms3d.js
+ M ui/node_modules/caniuse-lite/data/features/trusted-types.js
+ M ui/node_modules/caniuse-lite/data/features/ttf.js
+ M ui/node_modules/caniuse-lite/data/features/typedarrays.js
+ M ui/node_modules/caniuse-lite/data/features/u2f.js
+ M ui/node_modules/caniuse-lite/data/features/unhandledrejection.js
+ M ui/node_modules/caniuse-lite/data/features/upgradeinsecurerequests.js
+ M ui/node_modules/caniuse-lite/data/features/url-scroll-to-text-fragment.js
+ M ui/node_modules/caniuse-lite/data/features/url.js
+ M ui/node_modules/caniuse-lite/data/features/urlsearchparams.js
+ M ui/node_modules/caniuse-lite/data/features/use-strict.js
+ M ui/node_modules/caniuse-lite/data/features/user-select-none.js
+ M ui/node_modules/caniuse-lite/data/features/user-timing.js
+ M ui/node_modules/caniuse-lite/data/features/variable-fonts.js
+ M ui/node_modules/caniuse-lite/data/features/vector-effect.js
+ M ui/node_modules/caniuse-lite/data/features/vibration.js
+ M ui/node_modules/caniuse-lite/data/features/video.js
+ M ui/node_modules/caniuse-lite/data/features/videotracks.js
+ M ui/node_modules/caniuse-lite/data/features/view-transitions.js
+ M ui/node_modules/caniuse-lite/data/features/viewport-unit-variants.js
+ M ui/node_modules/caniuse-lite/data/features/viewport-units.js
+ M ui/node_modules/caniuse-lite/data/features/wai-aria.js
+ M ui/node_modules/caniuse-lite/data/features/wake-lock.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-bigint.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-bulk-memory.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-extended-const.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-gc.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-multi-memory.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-multi-value.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-mutable-globals.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-nontrapping-fptoint.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-reference-types.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-relaxed-simd.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-signext.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-simd.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-tail-calls.js
+ M ui/node_modules/caniuse-lite/data/features/wasm-threads.js
+ M ui/node_modules/caniuse-lite/data/features/wasm.js
+ M ui/node_modules/caniuse-lite/data/features/wav.js
+ M ui/node_modules/caniuse-lite/data/features/wbr-element.js
+ M ui/node_modules/caniuse-lite/data/features/web-animation.js
+ M ui/node_modules/caniuse-lite/data/features/web-app-manifest.js
+ M ui/node_modules/caniuse-lite/data/features/web-bluetooth.js
+ M ui/node_modules/caniuse-lite/data/features/web-serial.js
+ M ui/node_modules/caniuse-lite/data/features/web-share.js
+ M ui/node_modules/caniuse-lite/data/features/webauthn.js
+ M ui/node_modules/caniuse-lite/data/features/webcodecs.js
+ M ui/node_modules/caniuse-lite/data/features/webgl.js
+ M ui/node_modules/caniuse-lite/data/features/webgl2.js
+ M ui/node_modules/caniuse-lite/data/features/webgpu.js
+ M ui/node_modules/caniuse-lite/data/features/webhid.js
+ M ui/node_modules/caniuse-lite/data/features/webkit-user-drag.js
+ M ui/node_modules/caniuse-lite/data/features/webm.js
+ M ui/node_modules/caniuse-lite/data/features/webnfc.js
+ M ui/node_modules/caniuse-lite/data/features/webp.js
+ M ui/node_modules/caniuse-lite/data/features/websockets.js
+ M ui/node_modules/caniuse-lite/data/features/webtransport.js
+ M ui/node_modules/caniuse-lite/data/features/webusb.js
+ M ui/node_modules/caniuse-lite/data/features/webvr.js
+ M ui/node_modules/caniuse-lite/data/features/webvtt.js
+ M ui/node_modules/caniuse-lite/data/features/webworkers.js
+ M ui/node_modules/caniuse-lite/data/features/webxr.js
+ M ui/node_modules/caniuse-lite/data/features/will-change.js
+ M ui/node_modules/caniuse-lite/data/features/woff.js
+ M ui/node_modules/caniuse-lite/data/features/woff2.js
+ M ui/node_modules/caniuse-lite/data/features/word-break.js
+ M ui/node_modules/caniuse-lite/data/features/wordwrap.js
+ M ui/node_modules/caniuse-lite/data/features/x-doc-messaging.js
+ M ui/node_modules/caniuse-lite/data/features/x-frame-options.js
+ M ui/node_modules/caniuse-lite/data/features/xhr2.js
+ M ui/node_modules/caniuse-lite/data/features/xhtml.js
+ M ui/node_modules/caniuse-lite/data/features/xhtmlsmil.js
+ M ui/node_modules/caniuse-lite/data/features/xml-serializer.js
+ M ui/node_modules/caniuse-lite/data/features/zstd.js
+ M ui/node_modules/caniuse-lite/package.json
+ M ui/node_modules/electron-to-chromium/full-chromium-versions.js
+ M ui/node_modules/electron-to-chromium/full-chromium-versions.json
+ M ui/node_modules/electron-to-chromium/full-versions.js
+ M ui/node_modules/electron-to-chromium/full-versions.json
+ M ui/node_modules/electron-to-chromium/package.json
+ M ui/node_modules/electron-to-chromium/versions.js
+ M ui/node_modules/electron-to-chromium/versions.json
+ D ui/node_modules/hasown/.eslintrc
+ M ui/node_modules/hasown/CHANGELOG.md
+ M ui/node_modules/hasown/index.d.ts
+ M ui/node_modules/hasown/package.json
+ M ui/node_modules/nanoid/index.cjs
+ M ui/node_modules/nanoid/index.js
+ M ui/node_modules/nanoid/package.json
+ M ui/node_modules/node-releases/data/processed/envs.json
+ M ui/node_modules/node-releases/package.json
+ M ui/node_modules/postcss/lib/lazy-result.js
+ M ui/node_modules/postcss/lib/postcss.d.ts
+ M ui/node_modules/postcss/lib/previous-map.js
+ M ui/node_modules/postcss/lib/processor.js
+ M ui/node_modules/postcss/lib/stringifier.js
+ M ui/node_modules/postcss/lib/tokenize.js
+ M ui/node_modules/postcss/package.json
+ M ui/node_modules/rollup/dist/bin/rollup
+ M ui/node_modules/rollup/dist/es/getLogFilter.js
+ M ui/node_modules/rollup/dist/es/parseAst.js
+ M ui/node_modules/rollup/dist/es/rollup.js
+ M ui/node_modules/rollup/dist/es/shared/node-entry.js
+ M ui/node_modules/rollup/dist/es/shared/parseAst.js
+ M ui/node_modules/rollup/dist/es/shared/watch.js
+ M ui/node_modules/rollup/dist/getLogFilter.js
+ M ui/node_modules/rollup/dist/loadConfigFile.js
+ M ui/node_modules/rollup/dist/parseAst.js
+ M ui/node_modules/rollup/dist/rollup.js
+ M ui/node_modules/rollup/dist/shared/fsevents-importer.js
+ M ui/node_modules/rollup/dist/shared/index.js
+ M ui/node_modules/rollup/dist/shared/loadConfigFile.js
+ M ui/node_modules/rollup/dist/shared/parseAst.js
+ M ui/node_modules/rollup/dist/shared/rollup.js
+ M ui/node_modules/rollup/dist/shared/watch-cli.js
+ M ui/node_modules/rollup/dist/shared/watch.js
+ M ui/node_modules/rollup/package.json
+ M ui/package-lock.json
+ M ui/package.json
+ M ui/src/App.tsx
+ M ui/src/main.tsx
+ M ui/workbench/watchtower_ui_workbench_shell.tsx
+?? AGENTS.md
+?? CLAUDE.md
+?? RUN_AUDIT_LIVERUN.bat
+?? docs/WATCHTOWER_DOD_OFFICIAL_v1.md
+?? docs/WATCHTOWER_WBS_OFFICIAL_v1.md
+?? docs/canonical/
+?? project.contract.json
+?? proofs/audit_liverun/
+?? release/watchtower_cli_v1/scripts/watchtower_engine_v1.ps1
+?? runtime/
+?? scripts/_AUDIT_liverun_v1.ps1
+?? scripts/publish_watchtower_cli_release_v1.ps1
+?? scripts/watchtower_engine_v1.ps1
+?? ui/dist/
+?? ui/node_modules/.bin/conc
+?? ui/node_modules/.bin/conc.cmd
+?? ui/node_modules/.bin/conc.ps1
+?? ui/node_modules/.bin/concurrently
+?? ui/node_modules/.bin/concurrently.cmd
+?? ui/node_modules/.bin/concurrently.ps1
+?? ui/node_modules/.bin/tauri
+?? ui/node_modules/.bin/tauri.cmd
+?? ui/node_modules/.bin/tauri.ps1
+?? ui/node_modules/.bin/tree-kill
+?? ui/node_modules/.bin/tree-kill.cmd
+?? ui/node_modules/.bin/tree-kill.ps1
+?? ui/node_modules/@tauri-apps/
+?? ui/node_modules/accepts/
+?? ui/node_modules/ansi-regex/
+?? ui/node_modules/ansi-styles/
+?? ui/node_modules/body-parser/
+?? ui/node_modules/bytes/
+?? ui/node_modules/call-bind-apply-helpers/
+?? ui/node_modules/call-bound/
+?? ui/node_modules/chalk/
+?? ui/node_modules/cliui/
+?? ui/node_modules/color-convert/
+?? ui/node_modules/color-name/
+?? ui/node_modules/concurrently/
+?? ui/node_modules/content-disposition/
+?? ui/node_modules/content-type/
+?? ui/node_modules/cookie-signature/
+?? ui/node_modules/cookie/
+?? ui/node_modules/depd/
+?? ui/node_modules/dunder-proto/
+?? ui/node_modules/ee-first/
+?? ui/node_modules/emoji-regex/
+?? ui/node_modules/encodeurl/
+?? ui/node_modules/es-define-property/
+?? ui/node_modules/es-object-atoms/
+?? ui/node_modules/escape-html/
+?? ui/node_modules/etag/
+?? ui/node_modules/express/
+?? ui/node_modules/finalhandler/
+?? ui/node_modules/forwarded/
+?? ui/node_modules/fresh/
+?? ui/node_modules/get-caller-file/
+?? ui/node_modules/get-intrinsic/
+?? ui/node_modules/get-proto/
+?? ui/node_modules/gopd/
+?? ui/node_modules/has-flag/
+?? ui/node_modules/has-symbols/
+?? ui/node_modules/hasown/eslint.config.mjs
+?? ui/node_modules/http-errors/
+?? ui/node_modules/iconv-lite/
+?? ui/node_modules/inherits/
+?? ui/node_modules/ipaddr.js/
+?? ui/node_modules/is-fullwidth-code-point/
+?? ui/node_modules/is-promise/
+?? ui/node_modules/math-intrinsics/
+?? ui/node_modules/media-typer/
+?? ui/node_modules/merge-descriptors/
+?? ui/node_modules/mime-db/
+?? ui/node_modules/mime-types/
+?? ui/node_modules/nanoid/.claude/
+?? ui/node_modules/negotiator/
+?? ui/node_modules/object-inspect/
+?? ui/node_modules/on-finished/
+?? ui/node_modules/once/
+?? ui/node_modules/parseurl/
+?? ui/node_modules/path-to-regexp/
+?? ui/node_modules/proxy-addr/
+?? ui/node_modules/qs/
+?? ui/node_modules/range-parser/
+?? ui/node_modules/raw-body/
+?? ui/node_modules/require-directory/
+?? ui/node_modules/router/
+?? ui/node_modules/rxjs/
+?? ui/node_modules/safer-buffer/
+?? ui/node_modules/send/
+?? ui/node_modules/serve-static/
+?? ui/node_modules/setprototypeof/
+?? ui/node_modules/shell-quote/
+?? ui/node_modules/side-channel-list/
+?? ui/node_modules/side-channel-map/
+?? ui/node_modules/side-channel-weakmap/
+?? ui/node_modules/side-channel/
+?? ui/node_modules/statuses/
+?? ui/node_modules/string-width/
+?? ui/node_modules/strip-ansi/
+?? ui/node_modules/supports-color/
+?? ui/node_modules/toidentifier/
+?? ui/node_modules/tree-kill/
+?? ui/node_modules/tslib/
+?? ui/node_modules/type-is/
+?? ui/node_modules/unpipe/
+?? ui/node_modules/vary/
+?? ui/node_modules/wrap-ansi/
+?? ui/node_modules/wrappy/
+?? ui/node_modules/y18n/
+?? ui/node_modules/yargs-parser/
+?? ui/node_modules/yargs/
+?? ui/src-tauri/
+?? ui/src/App.css
+?? ui/src/lib/
+?? ui/src/workbench/
+?? ui/tsconfig.tsbuildinfo
+?? ui/workbench/bridge.smoke.stderr.txt
+?? ui/workbench/bridge.smoke.stdout.txt
+?? ui/workbench/bridge.v12.smoke.stderr.txt
+?? ui/workbench/bridge.v12.smoke.stdout.txt
+?? ui/workbench/bridge.v12h.smoke.stderr.txt
+?? ui/workbench/bridge.v12h.smoke.stdout.txt
+?? ui/workbench/bridge.v13.smoke.stderr.txt
+?? ui/workbench/bridge.v13.smoke.stdout.txt
+?? ui/workbench/bridge.v13b.smoke.stderr.txt
+?? ui/workbench/bridge.v13b.smoke.stdout.txt
+?? ui/workbench/bridge.v14.smoke.stderr.txt
+?? ui/workbench/bridge.v14.smoke.stdout.txt
+?? ui/workbench/bridge.v14c.smoke.stderr.txt
+?? ui/workbench/bridge.v14c.smoke.stdout.txt
+?? ui/workbench/bridge.v14d.smoke.stderr.txt
+?? ui/workbench/bridge.v14d.smoke.stdout.txt
+?? ui/workbench/v21c.endpoint_probe.json
+?? ui/workbench/v21d.bridge.stderr.txt
+?? ui/workbench/v21d.bridge.stdout.txt
+?? ui/workbench/v21d.endpoint_probe.json
+?? ui/workbench/v21g.bridge.stderr.txt
+?? ui/workbench/v21g.bridge.stdout.txt
+?? ui/workbench/v21g3.bridge.stderr.txt
+?? ui/workbench/v21g3.bridge.stdout.txt
+?? ui/workbench/v21g3.payload_shape_probe.json
+?? ui/workbench/vite.config.js
+?? ui/workbench/watchtower_api.ts
+?? ui/workbench/watchtower_bridge_server.cjs
+?? ui/workbench/watchtower_workbench_launcher.cjs
+?? workbench/
+
