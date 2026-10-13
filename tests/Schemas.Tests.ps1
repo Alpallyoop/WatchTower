@@ -13,7 +13,7 @@ function Get-SchemaPath { param([string]$Name) return (Join-Path $schemas ($Name
 function Invoke-Private { param([scriptblock]$Script, [object[]]$Arguments = @()) return & $module $Script @Arguments }
 function Get-ChainRows {
     param([string]$Path, [string]$HashField, [string]$PrevField)
-    return , (Invoke-Private { param($p, $h, $v) (Open-WtHashChain -Path $p -HashField $h -PrevField $v).Rows } @($Path, $HashField, $PrevField))
+    return , @(Invoke-Private { param($p, $h, $v) (Open-WtHashChain -Path $p -HashField $h -PrevField $v).Rows } @($Path, $HashField, $PrevField))
 }
 
 # Schemas that WatchTower v2 owns (emits or accepts). The six legacy v1 schemas

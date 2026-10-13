@@ -44,13 +44,14 @@ function Add-InboxPacket {
 }
 
 function Get-ReceiptRows {
+    # @(): a ledger with one row must still come back as a one-element list.
     param([string]$Root)
-    return , (Invoke-Private { param($p) (Open-WtHashChain -Path $p -HashField 'receipt_hash' -PrevField 'prev_receipt_hash').Rows } @((Join-Path $Root 'proofs/receipts/watchtower.telemetry.receipt.v1.ndjson')))
+    return , @(Invoke-Private { param($p) (Open-WtHashChain -Path $p -HashField 'receipt_hash' -PrevField 'prev_receipt_hash').Rows } @((Join-Path $Root 'proofs/receipts/watchtower.telemetry.receipt.v1.ndjson')))
 }
 
 function Get-AlertRows {
     param([string]$Root)
-    return , (Invoke-Private { param($p) (Open-WtHashChain -Path $p -HashField 'alert_hash' -PrevField 'prev_alert_hash').Rows } @((Join-Path $Root 'proofs/alerts/watchtower.alert.v1.ndjson')))
+    return , @(Invoke-Private { param($p) (Open-WtHashChain -Path $p -HashField 'alert_hash' -PrevField 'prev_alert_hash').Rows } @((Join-Path $Root 'proofs/alerts/watchtower.alert.v1.ndjson')))
 }
 
 function Test-EvidenceSignature {
@@ -209,7 +210,8 @@ Invoke-WtTest 'alerts: producer alert strings are bounded before they enter the 
     $body['reason_codes'] = @(1..100 | ForEach-Object { 'R' * 300 })
     [void](Add-InboxPacket $root 'p1' @{ EventType = 'watchtower.alert.v1'; Body = $body })
     [void](Invoke-WtIngest -Root $root -VerificationTime $RUN1)
-    $row = @(Get-AlertRows $root)[0]
+    $alertRows = Get-AlertRows $root
+    $row = $alertRows[0]
     Assert-WtTrue ($row['alert_type'].Length -le 160) ('alert_type length ' + $row['alert_type'].Length)
     Assert-WtEqual 32 @($row['reason_codes']).Count
     foreach ($code in $row['reason_codes']) { Assert-WtTrue ($code.Length -le 160) 'reason code not bounded' }
@@ -293,6 +295,19 @@ Invoke-WtTest 'paths: unsafe device ids are stored under a hashed folder, id pre
     Assert-WtTrue ($folders[0] -cmatch '^id-[0-9a-f]{40}$') $folders[0]
     $index = Read-WtJsonFile -Path (Join-Path $root 'runtime/evidence_index.json') -Object
     Assert-WtEqual 'Device:NUL.' $index['devices'][0]['device_id']
+}
+
+Invoke-WtTest 'neverlost: a producer named in NeverLost principal form is enrolled, verified and receipted' {
+    $root = New-StateRoot 'neverlost-principal'
+    $principal = 'single-tenant/device_agent/device/node-07'
+    $key = New-ReferenceProducerKey -Directory (Join-Path $work 'keys') -Name 'node07' -Comment 'node-07'
+    [void](Register-WtProducer -Root $root -Principal $principal -KeyId 'node-07-ed25519' -PublicKey ($key + '.pub'))
+    [void](New-ReferenceTelemetryPacket -Directory (Join-Path $root 'packets/inbox/p1') -KeyPath $key -EventType 'watchtower.heartbeat.v1' -Principal $principal -KeyId 'node-07-ed25519' -DeviceId 'node-07')
+    $run = Invoke-WtIngest -Root $root -VerificationTime $RUN1
+    Assert-WtEqual 'OK' $run.Results[0].Code
+    $rows = Get-ReceiptRows $root
+    Assert-WtEqual $principal $rows[0]['producer']
+    Assert-WtTrue (Test-WtLedger -Root $root).Valid
 }
 
 # --- crash recovery: sealing resumes from the ledgers ----------------------------------------
