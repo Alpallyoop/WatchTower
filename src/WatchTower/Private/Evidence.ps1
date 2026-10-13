@@ -164,9 +164,10 @@ function Get-WtAlertsFor {
             $state = [string]$body['state']
             $severity = 'info'
             if ($state -ceq 'broken') { $severity = 'critical' } elseif (@('drift', 'stale', 'degraded') -ccontains $state) { $severity = 'warning' }
-            $codes = [string[]]@($body['reason_codes'] | ForEach-Object { [string]$_ })
+            # Producer strings are bounded before they enter the alert ledger.
+            $codes = [string[]]@($body['reason_codes'] | Select-Object -First 32 | ForEach-Object { Limit-WtText ([string]$_) 128 })
             if ($codes.Length -eq 0) { $codes = @('PRODUCER_ALERT') }
-            [void]$alerts.Add((New-WtAlert -Type ('PRODUCER_' + [string]$body['alert_type']) -Severity $severity -State $state -ReasonCodes $codes))
+            [void]$alerts.Add((New-WtAlert -Type ('PRODUCER_' + (Limit-WtText ([string]$body['alert_type']) 128)) -Severity $severity -State $state -ReasonCodes $codes))
         }
     }
     return , $alerts
@@ -180,7 +181,8 @@ function Add-WtAlertRecord {
     $row = New-WtObject
     $row['schema'] = $script:WtAlertSchema
     $row['alert_time'] = $VerifiedUtc
-    $row['observed_utc'] = $(if ($Verdict.ProducerTime -cmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$') { $Verdict.ProducerTime } else { $VerifiedUtc })
+    # Header times of an unverified packet are attacker-writable: such alerts carry the verification time.
+    $row['observed_utc'] = $(if ($Verdict.SignerVerified -and $Verdict.ProducerTime -cmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$') { $Verdict.ProducerTime } else { $VerifiedUtc })
     # Never attribute an alert to a device named only by an unverified (attacker-writable) header.
     $row['device_id'] = $(if ($Verdict.SignerVerified -and $Verdict.DeviceId -cmatch $script:WtIdentifierPattern) { $Verdict.DeviceId } else { 'unknown' })
     $row['alert_type'] = $Alert.Type

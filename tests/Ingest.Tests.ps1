@@ -198,6 +198,20 @@ Invoke-WtTest 'alerts: verified rejections, producer alerts and unattributable f
     Assert-WtEqual ('PRODUCER_DRIFT/warning/9b2f1f0e-6d1c-4a55-8d2e-3f0a9c1b7e10;TELEMETRY_REJECTED/critical/9b2f1f0e-6d1c-4a55-8d2e-3f0a9c1b7e10;' +
         'TELEMETRY_REJECTED/critical/9b2f1f0e-6d1c-4a55-8d2e-3f0a9c1b7e10;UNVERIFIED_PACKET/warning/unknown;TELEMETRY_REJECTED/critical/9b2f1f0e-6d1c-4a55-8d2e-3f0a9c1b7e10;UNVERIFIED_PACKET/warning/unknown') $summaryText
     foreach ($row in $rows) { Assert-WtTrue (@($row['evidence'] | Where-Object { $_['kind'] -ceq 'watchtower_receipt_hash' }).Count -eq 1) 'alert without receipt evidence' }
+    # An unverified packet's header time is attacker-writable: its alert is dated at verification.
+    foreach ($row in @($rows | Where-Object { $_['alert_type'] -ceq 'UNVERIFIED_PACKET' })) { Assert-WtEqual $RUN1 $row['observed_utc'] }
+}
+Invoke-WtTest 'alerts: producer alert strings are bounded before they enter the ledger' {
+    $root = New-StateRoot 'long-alert'
+    $body = New-ReferenceBody -EventType 'watchtower.alert.v1'
+    $body['alert_type'] = 'X' * 5000
+    $body['reason_codes'] = @(1..100 | ForEach-Object { 'R' * 300 })
+    [void](Add-InboxPacket $root 'p1' @{ EventType = 'watchtower.alert.v1'; Body = $body })
+    [void](Invoke-WtIngest -Root $root -VerificationTime $RUN1)
+    $row = @(Get-AlertRows $root)[0]
+    Assert-WtTrue ($row['alert_type'].Length -le 160) ('alert_type length ' + $row['alert_type'].Length)
+    Assert-WtEqual 32 @($row['reason_codes']).Count
+    foreach ($code in $row['reason_codes']) { Assert-WtTrue ($code.Length -le 160) 'reason code not bounded' }
 }
 Invoke-WtTest 'seal: one signed checkpoint, one CPR-valid NFL outbox packet, one signed pledge; ledgers re-verify' {
     Assert-WtTrue (Test-WtHex64 $summary.CheckpointHash)
