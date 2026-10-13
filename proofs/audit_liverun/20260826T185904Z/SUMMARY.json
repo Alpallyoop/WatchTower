@@ -1,0 +1,85 @@
+{
+    "schema":  "watchtower.audit_liverun.v1",
+    "generated_utc":  "20260826T185904Z",
+    "repo_root":  "C:\\dev\\watchtower",
+    "ps_version":  "5.1.26100.9168",
+    "head_before":  "691f1ab47dcb61abace97e9992301f02acf98be5",
+    "head_after":  "691f1ab47dcb61abace97e9992301f02acf98be5",
+    "steps":  [
+                  {
+                      "step":  "tier0_full_green",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "FULL_GREEN_OK",
+                      "token_seen":  true,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "live_state_full_green",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "WATCHTOWER_LIVE_STATE_FULL_GREEN_OK",
+                      "token_seen":  true,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "selftest_packet_verify",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "WATCHTOWER_PACKET_VERIFY_SELFTEST_OK",
+                      "token_seen":  true,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "selftest_state",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "WATCHTOWER_STATE_SELFTEST_OK",
+                      "token_seen":  true,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "selftest_device_chain",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "WATCHTOWER_DEVICE_CHAIN_SELFTEST_OK",
+                      "token_seen":  true,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "selftest_device_binding",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "WATCHTOWER_DEVICE_BINDING_SELFTEST_OK",
+                      "token_seen":  true,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "selftest_pcv1",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "",
+                      "token_seen":  false,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "selftest_ingest_move",
+                      "present":  true,
+                      "exit":  0,
+                      "token":  "",
+                      "token_seen":  false,
+                      "ok":  true
+                  },
+                  {
+                      "step":  "selftest_cli",
+                      "present":  true,
+                      "exit":  1,
+                      "token":  "",
+                      "token_seen":  false,
+                      "ok":  false
+                  }
+              ],
+    "mutated_paths_during_run":  [
+                                     " M proofs/state/watchtower_state.json\r"
+                                 ]
+}

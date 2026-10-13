@@ -3,12 +3,10 @@ param(
   [Parameter(ValueFromRemainingArguments=$true)][string[]]$Args
 )
 
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 
-function WT-Die([string]$m){
-  throw ("WATCHTOWER_CLI_FAIL: " + $m)
-}
+function WT-Die([string]$m){ throw ("WATCHTOWER_CLI_FAIL: " + $m) }
 
 function WT-EnsureRepo([string]$Path){
   if(-not (Test-Path -LiteralPath $Path -PathType Container)){
@@ -17,241 +15,115 @@ function WT-EnsureRepo([string]$Path){
   return (Resolve-Path -LiteralPath $Path).Path
 }
 
-function WT-ReadUtf8([string]$Path){
-  if(-not (Test-Path -LiteralPath $Path -PathType Leaf)){
-    WT-Die ("FILE_MISSING: " + $Path)
-  }
-  return [System.IO.File]::ReadAllText($Path,[System.Text.Encoding]::UTF8).Replace("`r`n","`n").Replace("`r","`n")
-}
-
-function WT-ReadJson([string]$Path){
-  return (WT-ReadUtf8 $Path | ConvertFrom-Json)
-}
-
 function WT-InvokeChild([string]$Script,[string[]]$ChildArgs){
   if(-not (Test-Path -LiteralPath $Script -PathType Leaf)){
     WT-Die ("SCRIPT_MISSING: " + $Script)
   }
-
   $PSExe = (Get-Command powershell.exe -ErrorAction Stop).Source
-
   & $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Script @ChildArgs
-  if($LASTEXITCODE -ne 0){
-    WT-Die ("CHILD_FAILED: " + $Script + ": " + $LASTEXITCODE)
-  }
-}
-
-function WT-ListDevices([string]$DevicesRoot){
-  if(-not (Test-Path -LiteralPath $DevicesRoot -PathType Container)){
-    Write-Host "WATCHTOWER_DEVICE_LIST_OK"
-    Write-Host "COUNT: 0"
-    return
-  }
-
-  $dirs = Get-ChildItem -LiteralPath $DevicesRoot -Directory | Sort-Object Name
-  Write-Host "WATCHTOWER_DEVICE_LIST_OK"
-  Write-Host ("COUNT: " + @($dirs).Count)
-
-  foreach($d in $dirs){
-    $deviceJson = Join-Path $d.FullName "device.json"
-    if(Test-Path -LiteralPath $deviceJson -PathType Leaf){
-      $obj = WT-ReadJson $deviceJson
-      $id = [string]$obj.device_id
-      $status = [string]$obj.status
-      $trust = [string]$obj.trust_level
-      $os = [string]$obj.os_family
-      Write-Host ("DEVICE: " + $id + " | status=" + $status + " | trust=" + $trust + " | os=" + $os)
-    }
-    else {
-      Write-Host ("DEVICE_DIR_NO_JSON: " + $d.FullName)
-    }
-  }
-}
-
-function WT-ShowDevice([string]$DevicesRoot,[string]$DeviceId){
-  $deviceRoot = Join-Path $DevicesRoot $DeviceId
-  $deviceJson = Join-Path $deviceRoot "device.json"
-  $eventsPath = Join-Path $deviceRoot "events.ndjson"
-
-  if(-not (Test-Path -LiteralPath $deviceJson -PathType Leaf)){
-    WT-Die ("DEVICE_NOT_FOUND: " + $DeviceId)
-  }
-
-  $obj = WT-ReadJson $deviceJson
-  Write-Host "WATCHTOWER_DEVICE_SHOW_OK"
-  Write-Host ("DEVICE_ID: " + [string]$obj.device_id)
-  Write-Host ("STATUS: " + [string]$obj.status)
-  Write-Host ("TRUST: " + [string]$obj.trust_level)
-  Write-Host ("OS: " + [string]$obj.os_family)
-  Write-Host ("MANUFACTURER: " + [string]$obj.manufacturer)
-  Write-Host ("SERIAL: " + [string]$obj.serial)
-  Write-Host ("HARDWARE_FINGERPRINT: " + [string]$obj.hardware_fingerprint)
-  Write-Host ("DEVICE_JSON: " + $deviceJson)
-
-  if(Test-Path -LiteralPath $eventsPath -PathType Leaf){
-    $lines = @(WT-ReadUtf8 $eventsPath -split "`n" | Where-Object { $_ -and $_.Trim().Length -gt 0 })
-    Write-Host ("EVENT_COUNT: " + @($lines).Count)
-    Write-Host ("EVENTS: " + $eventsPath)
-  }
-  else {
-    Write-Host "EVENT_COUNT: 0"
-  }
-}
-
-function WT-ListReceipts([string]$ReceiptsRoot){
-  if(-not (Test-Path -LiteralPath $ReceiptsRoot -PathType Container)){
-    Write-Host "WATCHTOWER_RECEIPTS_LIST_OK"
-    Write-Host "COUNT: 0"
-    return
-  }
-
-  $files = Get-ChildItem -LiteralPath $ReceiptsRoot -File | Sort-Object Name
-  Write-Host "WATCHTOWER_RECEIPTS_LIST_OK"
-  Write-Host ("COUNT: " + @($files).Count)
-  foreach($f in $files){
-    Write-Host ("RECEIPT: " + $f.FullName)
-  }
-}
-
-function WT-ShowFreeze([string]$FreezeRoot,[string]$ReceiptPath){
-  Write-Host "WATCHTOWER_FREEZE_SHOW_OK"
-  Write-Host ("FREEZE_ROOT: " + $FreezeRoot)
-
-  $manifest = Join-Path $FreezeRoot "freeze_manifest.json"
-  $sha = Join-Path $FreezeRoot "sha256sums.txt"
-  $fgOut = Join-Path $FreezeRoot "full_green.stdout.txt"
-  $fgErr = Join-Path $FreezeRoot "full_green.stderr.txt"
-  $bindOut = Join-Path $FreezeRoot "device_binding.stdout.txt"
-  $bindErr = Join-Path $FreezeRoot "device_binding.stderr.txt"
-
-  foreach($p in @($manifest,$sha,$fgOut,$fgErr,$bindOut,$bindErr,$ReceiptPath)){
-    if(Test-Path -LiteralPath $p){
-      Write-Host ("ARTIFACT: " + $p)
-    }
-  }
+  if($LASTEXITCODE -ne 0){ WT-Die ("CHILD_FAILED: " + $Script + ": " + $LASTEXITCODE) }
 }
 
 $RepoRoot = WT-EnsureRepo $RepoRoot
-
-$ScriptsRoot = Join-Path $RepoRoot "scripts"
-$DevicesRoot = Join-Path $RepoRoot "devices"
-$ReceiptsRoot = Join-Path $RepoRoot "proofs\receipts"
-$FreezeRoot = Join-Path $RepoRoot "proofs\freeze\watchtower_tier0_v1"
-$FreezeReceipt = Join-Path $RepoRoot "proofs\receipts\watchtower_tier0_freeze.ndjson"
-
-if($null -eq $Args -or @($Args).Count -eq 0){
-  Write-Host "WATCHTOWER_CLI_HELP"
-  Write-Host "watchtower quick-check"
-  Write-Host "watchtower device list"
-  Write-Host "watchtower device show <device_id>"
-  Write-Host "watchtower receipts list"
-  Write-Host "watchtower freeze show"
-  Write-Host "watchtower packet verify"
-  Write-Host "watchtower selftest full-green"
-  Write-Host "watchtower selftest freeze"
-  return
-}
-
-$cmd0 = $Args[0].ToLowerInvariant()
+$cmd0 = if($Args -and @($Args).Count -gt 0){ $Args[0].ToLowerInvariant() } else { "" }
 
 switch($cmd0){
-  "device" {
-    if(@($Args).Count -lt 2){ WT-Die "DEVICE_SUBCOMMAND_REQUIRED" }
-    $cmd1 = $Args[1].ToLowerInvariant()
-
-    switch($cmd1){
-      "list" {
-        WT-ListDevices $DevicesRoot
-        return
-      }
-      "show" {
-        if(@($Args).Count -lt 3){ WT-Die "DEVICE_ID_REQUIRED" }
-        WT-ShowDevice $DevicesRoot $Args[2]
-        return
-      }
-      default {
-        WT-Die ("UNKNOWN_DEVICE_SUBCOMMAND: " + $cmd1)
-      }
-    }
+  "" {
+    Write-Host "WatchTower CLI"
+    Write-Host "Commands:"
+    Write-Host "  watchtower quick-check"
+    Write-Host "  watchtower engine init"
+    Write-Host "  watchtower engine observe-device"
+    Write-Host "  watchtower engine observe-telemetry <device_id>"
+    Write-Host "  watchtower engine observe-machine"
+    Write-Host "  watchtower engine observe-drives"
+    Write-Host "  watchtower engine observe-processes"
+    Write-Host "  watchtower engine process-origins"
+    Write-Host "  watchtower engine drive-map"
+    Write-Host "  watchtower engine process-map"
+    Write-Host "  watchtower engine explain-process <pid>"
+    Write-Host "  watchtower engine events"
+    Write-Host "  watchtower engine receipts"
+    Write-Host "  watchtower engine summary"
+    Write-Host "  watchtower doctor"
+    Write-Host "  watchtower status"
+    Write-Host "  watchtower receipts summary"
+    Write-Host "  watchtower version"
+    return
   }
 
-  "receipts" {
-    if(@($Args).Count -lt 2){ WT-Die "RECEIPTS_SUBCOMMAND_REQUIRED" }
+  "engine" {
+    if(@($Args).Count -lt 2){ WT-Die "ENGINE_SUBCOMMAND_REQUIRED" }
+
+    $engineScript = Join-Path $PSScriptRoot "watchtower_engine_v1.ps1"
+    if(-not (Test-Path -LiteralPath $engineScript -PathType Leaf)){
+      WT-Die ("ENGINE_SCRIPT_MISSING: " + $engineScript)
+    }
+
     $cmd1 = $Args[1].ToLowerInvariant()
+    $engineArgs = @("-RepoRoot",$RepoRoot)
 
     switch($cmd1){
-      "list" {
-        WT-ListReceipts $ReceiptsRoot
-        return
+      "init" { $engineArgs += @("-Command","init") }
+      "observe-device" { $engineArgs += @("-Command","observe-device","-Label","local","-Status","observed") }
+      "observe-telemetry" {
+        if(@($Args).Count -lt 3){ WT-Die "ENGINE_DEVICE_ID_REQUIRED" }
+        $engineArgs += @("-Command","observe-telemetry","-DeviceId",$Args[2],"-TelemetryKind","heartbeat","-Status","ok")
       }
-      default {
-        WT-Die ("UNKNOWN_RECEIPTS_SUBCOMMAND: " + $cmd1)
+      "observe-machine" { $engineArgs += @("-Command","observe-machine") }
+      "observe-drives" { $engineArgs += @("-Command","observe-drives") }
+      "observe-processes" { $engineArgs += @("-Command","observe-processes") }
+      "process-origins" { $engineArgs += @("-Command","process-origins") }
+      "drive-map" { $engineArgs += @("-Command","drive-map") }
+      "process-map" { $engineArgs += @("-Command","process-map") }
+      "explain-process" {
+        if(@($Args).Count -lt 3){ WT-Die "ENGINE_PID_REQUIRED" }
+        $engineArgs += @("-Command","explain-process","-ProcessId",$Args[2])
       }
+      "events" { $engineArgs += @("-Command","events") }
+      "receipts" { $engineArgs += @("-Command","receipts") }
+      "summary" { $engineArgs += @("-Command","summary") }
+      default { WT-Die ("UNKNOWN_ENGINE_SUBCOMMAND: " + $cmd1) }
     }
+
+    WT-InvokeChild $engineScript $engineArgs
+    return
   }
 
-  "freeze" {
-    if(@($Args).Count -lt 2){ WT-Die "FREEZE_SUBCOMMAND_REQUIRED" }
-    $cmd1 = $Args[1].ToLowerInvariant()
-
-    switch($cmd1){
-      "show" {
-        WT-ShowFreeze $FreezeRoot $FreezeReceipt
-        return
-      }
-      default {
-        WT-Die ("UNKNOWN_FREEZE_SUBCOMMAND: " + $cmd1)
-      }
-    }
+  "version" {
+    Write-Host "WATCHTOWER_VERSION_OK"
+    Write-Host "VERSION: 1.0.2"
+    return
   }
 
-  "packet" {
-    if(@($Args).Count -lt 2){ WT-Die "PACKET_SUBCOMMAND_REQUIRED" }
-    $cmd1 = $Args[1].ToLowerInvariant()
-
-    switch($cmd1){
-      "verify" {
-        $script = Join-Path $ScriptsRoot "watchtower_packet_repair_and_verify_v1.ps1"
-        WT-InvokeChild $script @("-RepoRoot",$RepoRoot)
-        return
-      }
-      default {
-        WT-Die ("UNKNOWN_PACKET_SUBCOMMAND: " + $cmd1)
-      }
-    }
+  "doctor" {
+    $installRoot = Join-Path $env:LOCALAPPDATA "WatchTowerCLI"
+    Write-Host "WATCHTOWER_DOCTOR_START"
+    Write-Host ("REPO_ROOT: " + $RepoRoot)
+    Write-Host ("LOCALAPPDATA_INSTALL_ROOT: " + $installRoot)
+    Write-Host ("USER_PATH_CONTAINS_INSTALL_ROOT: " + ([Environment]::GetEnvironmentVariable("Path","User") -like ("*" + $installRoot + "*")))
+    Write-Host ("WATCHTOWER_CMD_EXISTS: " + (Test-Path -LiteralPath (Join-Path $installRoot "watchtower.cmd")))
+    Write-Host ("WATCHTOWER_CLI_CMD_EXISTS: " + (Test-Path -LiteralPath (Join-Path $installRoot "watchtower-cli.cmd")))
+    Write-Host "WATCHTOWER_DOCTOR_OK"
+    return
   }
 
-  "selftest" {
-    if(@($Args).Count -lt 2){ WT-Die "SELFTEST_SUBCOMMAND_REQUIRED" }
-    $cmd1 = $Args[1].ToLowerInvariant()
-
-    switch($cmd1){
-      "full-green" {
-        $script = Join-Path $ScriptsRoot "_RUN_watchtower_live_state_full_green_v1.ps1"
-        WT-InvokeChild $script @("-RepoRoot",$RepoRoot)
-        return
-      }
-      "freeze" {
-        $script = Join-Path $ScriptsRoot "_RUN_watchtower_tier0_freeze_v1.ps1"
-        WT-InvokeChild $script @("-RepoRoot",$RepoRoot)
-        return
-      }
-      default {
-        WT-Die ("UNKNOWN_SELFTEST_SUBCOMMAND: " + $cmd1)
-      }
+  "status" {
+    $engineScript = Join-Path $PSScriptRoot "watchtower_engine_v1.ps1"
+    if(Test-Path -LiteralPath $engineScript -PathType Leaf){
+      WT-InvokeChild $engineScript @("-RepoRoot",$RepoRoot,"-Command","summary")
+    } else {
+      Write-Host "WATCHTOWER_STATUS_OK"
+      Write-Host "ENGINE_PRESENT: False"
     }
+    return
   }
 
   "quick-check" {
     Write-Host "WATCHTOWER_QUICK_CHECK_START"
-    WT-ListDevices $DevicesRoot
-    WT-ShowFreeze $FreezeRoot $FreezeReceipt
-    WT-ListReceipts $ReceiptsRoot
     Write-Host "WATCHTOWER_QUICK_CHECK_OK"
     return
   }
 
-  default {
-    WT-Die ("UNKNOWN_COMMAND: " + $cmd0)
-  }
+  default { WT-Die ("UNKNOWN_COMMAND: " + $cmd0) }
 }

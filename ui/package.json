@@ -1,25 +1,33 @@
 {
-  "name": "watchtower-ui",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.41",
-    "tailwindcss": "^3.4.10",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.2"
-  }
+    "name":  "watchtower-ui",
+    "private":  true,
+    "version":  "0.1.0",
+    "type":  "module",
+    "scripts":  {
+                    "dev:local":  "concurrently \"npm run bridge\" \"npm run dev\"",
+                    "dev":  "vite",
+                    "build":  "tsc -b \u0026\u0026 vite build",
+                    "preview":  "vite preview",
+                    "bridge":  "node workbench/watchtower_bridge_server.cjs",
+                    "workbench":  "node workbench/watchtower_workbench_launcher.cjs",
+                    "tauri":  "tauri"
+                },
+    "dependencies":  {
+                         "@tauri-apps/api":  "2.10.1",
+                         "react":  "^18.3.1",
+                         "react-dom":  "^18.3.1"
+                     },
+    "devDependencies":  {
+                            "@tauri-apps/cli":  "^2.10.1",
+                            "@types/react":  "^18.3.3",
+                            "@types/react-dom":  "^18.3.0",
+                            "@vitejs/plugin-react":  "^4.3.1",
+                            "autoprefixer":  "^10.4.20",
+                            "concurrently":  "^9.2.1",
+                            "express":  "^5.2.1",
+                            "postcss":  "^8.4.41",
+                            "tailwindcss":  "^3.4.10",
+                            "typescript":  "^5.5.4",
+                            "vite":  "^5.4.2"
+                        }
 }

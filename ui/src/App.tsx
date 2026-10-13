@@ -1,5 +1,5 @@
-import WatchtowerUiWorkbenchShell from "./watchtower_ui_workbench_shell";
+import WatchTowerWorkbench from "./workbench/watchtower_ui_workbench_shell";
 
 export default function App() {
-  return <WatchtowerUiWorkbenchShell />;
+  return <WatchTowerWorkbench />;
 }

@@ -2,7 +2,7 @@ param(
   [Parameter(Mandatory=$true)][string]$RepoRoot
 )
 
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 
 function WT-Die([string]$m){
@@ -67,16 +67,17 @@ $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 $ScriptsRoot = Join-Path $RepoRoot "scripts"
 $FreezeRoot  = Join-Path $RepoRoot "proofs\freeze\watchtower_cli_v1"
 
-$CliScript   = Join-Path $ScriptsRoot "watchtower_cli_v1.ps1"
-$Selftest    = Join-Path $ScriptsRoot "_selftest_watchtower_cli_v1.ps1"
-$FreezeRun   = Join-Path $ScriptsRoot "_RUN_watchtower_cli_freeze_v1.ps1"
+$CliScript    = Join-Path $ScriptsRoot "watchtower_cli_v1.ps1"
+$EngineScript = Join-Path $ScriptsRoot "watchtower_engine_v1.ps1"
+$Selftest     = Join-Path $ScriptsRoot "_selftest_watchtower_cli_v1.ps1"
+$FreezeRun    = Join-Path $ScriptsRoot "_RUN_watchtower_cli_freeze_v1.ps1"
 
 $FreezeStdout = Join-Path $FreezeRoot "stdout.txt"
 $FreezeStderr = Join-Path $FreezeRoot "stderr.txt"
 $FreezeSha    = Join-Path $FreezeRoot "sha256sums.txt"
 
-foreach($p in @($CliScript,$Selftest,$FreezeRun,$FreezeStdout,$FreezeStderr,$FreezeSha)){
-  if(-not (Test-Path -LiteralPath $p)){
+foreach($p in @($CliScript,$EngineScript,$Selftest,$FreezeRun,$FreezeStdout,$FreezeStderr,$FreezeSha)){
+  if(-not (Test-Path -LiteralPath $p -PathType Leaf)){
     WT-Die ("REQUIRED_ARTIFACT_MISSING: " + $p)
   }
 }
@@ -95,9 +96,10 @@ WT-EnsureDir $BundleScripts
 WT-EnsureDir $BundleProofs
 WT-EnsureDir $BundleDocs
 
-WT-CopyFile $CliScript   (Join-Path $BundleScripts "watchtower_cli_v1.ps1")
-WT-CopyFile $Selftest    (Join-Path $BundleScripts "_selftest_watchtower_cli_v1.ps1")
-WT-CopyFile $FreezeRun   (Join-Path $BundleScripts "_RUN_watchtower_cli_freeze_v1.ps1")
+WT-CopyFile $CliScript    (Join-Path $BundleScripts "watchtower_cli_v1.ps1")
+WT-CopyFile $EngineScript (Join-Path $BundleScripts "watchtower_engine_v1.ps1")
+WT-CopyFile $Selftest     (Join-Path $BundleScripts "_selftest_watchtower_cli_v1.ps1")
+WT-CopyFile $FreezeRun    (Join-Path $BundleScripts "_RUN_watchtower_cli_freeze_v1.ps1")
 
 WT-CopyFile $FreezeStdout (Join-Path $BundleProofs "stdout.txt")
 WT-CopyFile $FreezeStderr (Join-Path $BundleProofs "stderr.txt")
@@ -111,6 +113,7 @@ Deterministic observer and evidence surface for WatchTower.
 
 ## Included
 - scripts/watchtower_cli_v1.ps1
+- scripts/watchtower_engine_v1.ps1
 - scripts/_selftest_watchtower_cli_v1.ps1
 - scripts/_RUN_watchtower_cli_freeze_v1.ps1
 - proofs/freeze/watchtower_cli_v1/stdout.txt
@@ -118,14 +121,23 @@ Deterministic observer and evidence surface for WatchTower.
 - proofs/freeze/watchtower_cli_v1/sha256sums.txt
 
 ## Example usage
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\watchtower_cli_v1.ps1 -RepoRoot . device list
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\watchtower_cli_v1.ps1 -RepoRoot . freeze show
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\watchtower_cli_v1.ps1 -RepoRoot . version
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\watchtower_cli_v1.ps1 -RepoRoot . quick-check
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\watchtower_cli_v1.ps1 -RepoRoot . engine init
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\watchtower_cli_v1.ps1 -RepoRoot . engine observe-device
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\watchtower_cli_v1.ps1 -RepoRoot . engine summary
 powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\_selftest_watchtower_cli_v1.ps1 -RepoRoot .
 
 ## Success tokens
-- WATCHTOWER_DEVICE_LIST_OK
-- WATCHTOWER_RECEIPTS_LIST_OK
-- WATCHTOWER_FREEZE_SHOW_OK
+- WATCHTOWER_VERSION_OK
+- WATCHTOWER_QUICK_CHECK_OK
+- WATCHTOWER_DOCTOR_OK
+- WATCHTOWER_STATUS_OK
+- WATCHTOWER_RECEIPTS_SUMMARY_OK
+- WATCHTOWER_ENGINE_INIT_OK
+- WATCHTOWER_ENGINE_DEVICE_OBSERVE_OK
+- WATCHTOWER_ENGINE_TELEMETRY_OBSERVE_OK
+- WATCHTOWER_ENGINE_SUMMARY_OK
 - WATCHTOWER_CLI_SELFTEST_OK
 - WATCHTOWER_CLI_FREEZE_OK
 "@

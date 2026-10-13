@@ -39,3 +39,10 @@ _quarantine/
 scripts/_scratch/
 
 proofs/progress/
+
+# Node dependencies (never commit) — added by audit fix
+node_modules/
+**/node_modules/
+
+# UI incremental build info
+ui/tsconfig.tsbuildinfo

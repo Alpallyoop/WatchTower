@@ -1,1 +1,1 @@
-{"schema":"watchtower.state.v1","device_id":"device-fail","observed_utc":"2026-01-01T00:05:00Z","evaluated_utc":"2026-04-15T18:42:17Z","state":"broken","reason":"health report indicates failure","source":"C:\\dev\\watchtower\\test_vectors\\watchtower\\state\\v1\\failure.ndjson"}
+{"schema":"watchtower.state.v1","device_id":"device-fail","observed_utc":"2026-01-01T00:05:00Z","evaluated_utc":"2026-08-26T19:00:00Z","state":"broken","reason":"health report indicates failure","source":"C:\\dev\\watchtower\\test_vectors\\watchtower\\state\\v1\\failure.ndjson"}
