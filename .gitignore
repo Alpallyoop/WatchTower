@@ -39,3 +39,22 @@ _quarantine/
 scripts/_scratch/
 
 proofs/progress/
+
+# Node dependencies (never commit) — added by audit fix
+node_modules/
+**/node_modules/
+
+# UI incremental build info
+ui/tsconfig.tsbuildinfo
+
+# ---- WatchTower v2 node state (when the repository root is used as the state root) ----
+# Per-node, append-only evidence and keys: produced by `bin/watchtower.ps1`, never committed.
+config/watchtower.settings.json
+proofs/trust/neverlost/
+proofs/alerts/
+proofs/pledges/
+runtime/
+
+# Test reports written with -ReportPath
+watchtower-test-run.json
+test-report.json

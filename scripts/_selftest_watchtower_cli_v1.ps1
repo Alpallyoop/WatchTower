@@ -5,6 +5,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# WatchTower CLI selftest.
+# Repointed by audit (2026-08-26) from a never-implemented command surface
+# (`device list`, `receipts list`, `freeze show`) to the CLI's REAL implemented
+# commands, plus a fail-closed negative case. See docs/WATCHTOWER_WBS_OFFICIAL_v1.md (H9).
+
 function WT-Die([string]$m){
   throw ("WATCHTOWER_CLI_SELFTEST_FAIL: " + $m)
 }
@@ -49,19 +54,27 @@ if(-not (Test-Path -LiteralPath $Cli -PathType Leaf)){
   WT-Die ("CLI_MISSING: " + $Cli)
 }
 
-$r = WT-InvokeCapture $Cli @("-RepoRoot",$RepoRoot,"device","list")
-if($r.ExitCode -ne 0){ WT-Die ("DEVICE_LIST_EXIT_" + $r.ExitCode + ": " + $r.Output) }
-if($r.Output -notmatch 'WATCHTOWER_DEVICE_LIST_OK'){ WT-Die "DEVICE_LIST_TOKEN_MISSING" }
-Write-Host "CASE_OK: device_list" -ForegroundColor Green
+# --- Positive cases: real, implemented, engine-independent commands ---
 
-$r = WT-InvokeCapture $Cli @("-RepoRoot",$RepoRoot,"receipts","list")
-if($r.ExitCode -ne 0){ WT-Die ("RECEIPTS_LIST_EXIT_" + $r.ExitCode + ": " + $r.Output) }
-if($r.Output -notmatch 'WATCHTOWER_RECEIPTS_LIST_OK'){ WT-Die "RECEIPTS_LIST_TOKEN_MISSING" }
-Write-Host "CASE_OK: receipts_list" -ForegroundColor Green
+$r = WT-InvokeCapture $Cli @("-RepoRoot",$RepoRoot,"quick-check")
+if($r.ExitCode -ne 0){ WT-Die ("QUICK_CHECK_EXIT_" + $r.ExitCode + ": " + $r.Output) }
+if($r.Output -notmatch 'WATCHTOWER_QUICK_CHECK_OK'){ WT-Die "QUICK_CHECK_TOKEN_MISSING" }
+Write-Host "CASE_OK: quick_check" -ForegroundColor Green
 
-$r = WT-InvokeCapture $Cli @("-RepoRoot",$RepoRoot,"freeze","show")
-if($r.ExitCode -ne 0){ WT-Die ("FREEZE_SHOW_EXIT_" + $r.ExitCode + ": " + $r.Output) }
-if($r.Output -notmatch 'WATCHTOWER_FREEZE_SHOW_OK'){ WT-Die "FREEZE_SHOW_TOKEN_MISSING" }
-Write-Host "CASE_OK: freeze_show" -ForegroundColor Green
+$r = WT-InvokeCapture $Cli @("-RepoRoot",$RepoRoot,"version")
+if($r.ExitCode -ne 0){ WT-Die ("VERSION_EXIT_" + $r.ExitCode + ": " + $r.Output) }
+if($r.Output -notmatch 'WATCHTOWER_VERSION_OK'){ WT-Die "VERSION_TOKEN_MISSING" }
+Write-Host "CASE_OK: version" -ForegroundColor Green
+
+$r = WT-InvokeCapture $Cli @("-RepoRoot",$RepoRoot,"doctor")
+if($r.ExitCode -ne 0){ WT-Die ("DOCTOR_EXIT_" + $r.ExitCode + ": " + $r.Output) }
+if($r.Output -notmatch 'WATCHTOWER_DOCTOR_OK'){ WT-Die "DOCTOR_TOKEN_MISSING" }
+Write-Host "CASE_OK: doctor" -ForegroundColor Green
+
+# --- Negative case: an unknown command MUST fail closed (non-zero exit) ---
+
+$r = WT-InvokeCapture $Cli @("-RepoRoot",$RepoRoot,"this-command-does-not-exist")
+if($r.ExitCode -eq 0){ WT-Die "UNKNOWN_COMMAND_DID_NOT_FAIL_CLOSED" }
+Write-Host "CASE_OK: unknown_command_fails_closed" -ForegroundColor Green
 
 Write-Host "WATCHTOWER_CLI_SELFTEST_OK" -ForegroundColor Green

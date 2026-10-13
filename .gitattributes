@@ -1,0 +1,23 @@
+# Canonical text is UTF-8 without BOM and LF only (Constellation SHARED_INVARIANTS).
+* text=auto eol=lf
+*.ps1   text eol=lf
+*.psm1  text eol=lf
+*.psd1  text eol=lf
+*.json  text eol=lf
+*.ndjson text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+
+# Test vectors and fixtures are hashed and signed byte-for-byte: never normalise them.
+test_vectors/**   -text
+tests/fixtures/** -text
+
+# Historical evidence (freeze proofs, release bundles, scan reports) is hashed as committed,
+# some of it with CRLF: keep those bytes exactly as they are.
+proofs/**  -text
+release/** -text
+reports/** -text
+# Listed in sha256sums.watchtower_v1.txt with their committed (CRLF) bytes.
+scripts/_bootstrap_watchtower_repo_v1.ps1        -text
+ui/src/watchtower_ui_workbench_shell.tsx         -text
+ui/workbench/watchtower_ui_workbench_shell.tsx   -text
