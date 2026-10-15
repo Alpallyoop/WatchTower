@@ -129,6 +129,16 @@
         },
         "additionalProperties": false
       }
+    },
+    "integration_witness_packet_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Outbox packet that handed this run's new integration receipts to NFL (absent when there were none)."
+    },
+    "integration_witness_error": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$",
+      "description": "Present when handing integration receipts to NFL failed in this run; witnessing never blocks ingest and is retried by the next run."
     }
   },
   "additionalProperties": false

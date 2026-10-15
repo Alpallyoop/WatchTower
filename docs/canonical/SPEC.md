@@ -1,6 +1,6 @@
 # WatchTower — Specification (v2)
 
-Status: normative for module version 2.0.0. Identity and scope: `IDENTITY.md`. What is proven
+Status: normative for module version 2.1.0 (2.1 additions: proposal 0006). Identity and scope: `IDENTITY.md`. What is proven
 today and what is not: `CURRENT_STATE.md`. Wire contracts with each neighbour: `docs/contracts/`.
 Machine-readable shapes: `schemas/` (JSON Schema draft 2020-12).
 
@@ -55,6 +55,7 @@ rights from a project folder (`KEY_ACL_FAILED` if that cannot be done).
   proofs/keys/watchtower_authority_ed25519   authority key (+ .pub); never committed
   proofs/trust/neverlost/trust_bundle.json   neverlost.trust_bundle.v1
   proofs/trust/neverlost/allowed_signers     derived from the bundle, byte-for-byte
+  proofs/trust/neverlost/keys/<key id>.pub   producer key files (pubkey_path of each enrolled key)
   packets/inbox/<name>/                      inbound packets (names starting . or _ are skipped)
   packets/receipts/<packet_id>/              accepted packets, moved byte-identical
   packets/quarantine/<name>[__n]/            rejected packets, + <name>.rejection.json
@@ -65,6 +66,11 @@ rights from a project folder (`KEY_ACL_FAILED` if that cannot be done).
   proofs/alerts/watchtower.alert.v1.ndjson                 alert ledger (hash chain)
   proofs/pledges/watchtower.device_pledge.v1.ndjson        pledge ledger (hash chain)
   proofs/pledges/signatures/<pledge_hash>.sig
+  proofs/integrations/watchtower__<provider>.ndjson        constellation.integration.receipt.v1 (§17)
+  proofs/integrations/watchtower.integration_witness_record.v1.ndjson   witness ledger (§17)
+  proofs/policy/inputs/<hex>.json            policy.input.v1 sent to Arbiter (§16)
+  proofs/policy/decisions/<hex>.json         policy.decision.v1 received (§16)
+  proofs/policy/sets/<hex>/                  policy snapshot evaluated (§16)
   runtime/devices/<device>/{heartbeat,health_report,policy_attest}.json (+ .sig)
   runtime/services/<service_id>/health_report_<observed>_<packet12>.json (+ .sig)
   runtime/last_ingest.json                   watchtower.ingest_run.v1
@@ -88,6 +94,7 @@ always carries the original id.
 | `publish.device_pledge` | true | Append a device pledge when sealing. |
 | `service_bindings[]` | `[]` | `{service_id, producer, producer_instance[, device_id]}`: whose health reports describe a Constellation service. |
 | `policy_pins[]` | `[]` | `{device_id or effective_group, expected_policy_hash}`: expected effective-policy hash. A device pin wins over a group pin. |
+| `arbiter` | absent (off) | `{policyset, policy_root[, timeout_seconds]}`: turns on the policy gate (§16). Both paths are root-relative; `timeout_seconds` 1–3600, default 120. |
 
 Unknown keys at any level fail with `SETTINGS_UNKNOWN_KEY`; invalid values with `SETTINGS_VALUE`.
 `service_id` is a Constellation `repository_dir` (case preserved, at most 64 characters, no
@@ -157,6 +164,8 @@ are skipped. For each packet:
    accepted that the producer did not sign. Rules: `DUPLICATE_PACKET` (same `packet_id`), `REPLAYED_EVENT` (same producer + `event_id`),
    `SEQUENCE_REPLAYED` / `SEQUENCE_REGRESSION` / `TIME_REGRESSION` per
    (producer, producer_instance, device_id) stream, `FUTURE_TIMESTAMP` beyond the allowed skew.
+   When the policy gate is on, a packet that passed 1 and 2 is then evaluated (§16); anything but
+   `allow` is a rejection at stage `policy`.
 3. Routing is decided before anything is written: accepted → `packets/receipts/<packet_id>`
    (`ACCEPTED_DESTINATION_EXISTS` if taken); rejected → `packets/quarantine/<name>` or the first
    free `<name>__<n>`.
@@ -168,8 +177,9 @@ are skipped. For each packet:
 5. For an accepted packet: device evidence and the service health facet are published (§8).
 6. Alert evidence is appended (§9).
 
-After the loop, sealing (§10) runs from the ledgers, then `runtime/last_ingest.json` and the
-evidence index are rewritten. The lock is always released.
+After the loop, sealing (§10) runs from the ledgers, then any integration receipt not yet
+witnessed is handed to NFL (§17), then `runtime/last_ingest.json` and the evidence index are
+rewritten. The lock is always released.
 
 ### Crash behaviour
 
@@ -209,7 +219,8 @@ contains `generated_utc` (Constellation's oversight would read it as freshness).
 | Condition | alert_type | severity | state |
 |---|---|---|---|
 | Rejected, signer verified, replay/order/clock code | `TELEMETRY_REJECTED` | critical | unknown |
-| Rejected, signer verified, any other code | `TELEMETRY_REJECTED` | warning | unknown |
+| Rejected, signer verified, policy gate could not decide (`POLICY_EVALUATOR_*`, `POLICY_DECISION_INVALID`, `POLICY_SET_INVALID`, `POLICY_EVIDENCE_CONFLICT`) | `TELEMETRY_REJECTED` | critical | unknown |
+| Rejected, signer verified, any other code (including `POLICY_DENY`, `POLICY_QUARANTINE`) | `TELEMETRY_REJECTED` | warning | unknown |
 | Rejected, signer not verified | `UNVERIFIED_PACKET` | warning | unknown |
 | health_status fail / degraded | `HEALTH_FAIL` / `HEALTH_DEGRADED` | critical / warning | broken / degraded |
 | policy hash ≠ pinned | `POLICY_DRIFT` | critical | drift |
@@ -249,12 +260,16 @@ or non-canonical line fails the chain.
 signature against the pinned authority key, checks that each checkpoint seals the receipt and
 alert heads it names and that each pledge binds an existing checkpoint and the receipt head at
 that point, and that every referenced outbox packet still verifies. Missing routed or outbox
-packets are warnings, not failures.
+packets are warnings, not failures. It also re-verifies the integration and witness ledgers
+(§17) and, for every receipt with a `policy_decision`, that it links to an existing
+`watchtower > arbiter` integration receipt and that the stored input, decision and policy
+snapshot still reproduce the recorded hashes (§16).
 
 ## 12. Doctor and evidence index
 
 `Invoke-WtDoctor` (CLI `doctor`) runs isolated checks: `ssh_keygen` (a throwaway key proves SSHSIG sign and verify work; OpenSSH 8.1+), `settings`, `trust_bundle`,
-`allowed_signers_derived`, `authority_key`, `ledgers`, `ingest_lock`. `-Publish` writes
+`allowed_signers_derived`, `authority_key`, `ledgers`, `policy_gate` (only meaningful when
+`settings.arbiter` is set: Arbiter found, policy readable; read-only), `ingest_lock`. `-Publish` writes
 `runtime/doctor_report.json` and a signed `watchtower.health_report.v1` facet for the `watchtower`
 service itself (`proof_status` `self-check`). A broken ledger is never reported healthy.
 
@@ -270,7 +285,7 @@ outbox packet count and the last ingest record.
 | Command | Purpose |
 |---|---|
 | `init` | Create or validate the authority key and trust bundle (never rotates silently) |
-| `enroll` | Enroll a producer: `-Principal -KeyId -PublicKey [-Namespace] [-AllowTestKey]` |
+| `enroll` | Enroll a producer: `-Principal -KeyId -PublicKey [-Namespace] [-AllowTestKey]`, or from a NeverLost-issued bundle: `-FromBundle <bundle> -Principal [-KeyId] [-BundleRoot] [-NeverLostReceipt <file>] [-Namespace]` (§17) |
 | `trust` | Show the trust bundle; confirm `allowed_signers` is exactly derived |
 | `verify-packet <path>` | PCv1 verification (read-only) |
 | `verify-telemetry <path>` | Telemetry verification against pinned trust (read-only) |
@@ -278,6 +293,7 @@ outbox packet count and the last ingest record.
 | `ledger` | §11 (read-only) |
 | `doctor [-Publish]` | §12 |
 | `index` | Rewrite the evidence index |
+| `integrations [-Witness]` | Re-verify the integration receipts (§17); `-Witness` hands unwitnessed ones to NFL |
 | `version`, `help` | |
 
 Output is `key=value` lines and one final token: `WATCHTOWER_<COMMAND>_OK` (exit 0) or
@@ -293,8 +309,8 @@ before and after (any change fails `REPO_MUTATED`) and, with `-ReportPath`, writ
 
 | Token | Meaning |
 |---|---|
-| `WATCHTOWER_TIER0_FULL_GREEN_OK suites=6 cases=<n>` | Core, Packet, Telemetry, Ingest, Cli and Schemas all passed; nothing skipped is counted |
-| `WATCHTOWER_INTEROP_OK cases=<n>` | live-state-surgeon fixture, the real CPR verifier and the real NeverLost library all agree |
+| `WATCHTOWER_TIER0_FULL_GREEN_OK suites=7 cases=<n>` | Core, Packet, Telemetry, Ingest, Cli, Schemas and Integration all passed; nothing skipped is counted |
+| `WATCHTOWER_INTEROP_OK cases=<n>` | live-state-surgeon's current emitter, the real CPR verifier, the real NeverLost library and the real Arbiter engine all agree |
 | `WATCHTOWER_INTEROP_PARTIAL cases=<n> unavailable=<k>` | a sibling checkout was unavailable; its cases are reported as skipped, never as passed |
 
 ## 15. Compatibility and change control
@@ -305,3 +321,70 @@ before and after (any change fails `REPO_MUTATED`) and, with `-ReportPath`, writ
   specification (`CURRENT_STATE.md` lists them).
 - Any change to identity, namespaces, schemas, receipt fields, layout or token names is a
   contract change and needs a proposal under `docs/proposals`.
+
+## 16. Policy gate (optional; registry integration `watchtower > arbiter`)
+
+Off unless `settings.arbiter` is present. Arbiter decides; WatchTower routes and keeps the proof.
+
+1. At the start of an ingest run the policy (`policy.policyset.v1` + its `policy.rule_file.v1`
+   files under `policy_root`) is read once, strictly; `policy_hash` is computed as Arbiter
+   defines it (`sha256(canonical({"policyset", "rule_files"}) + LF)`, `sha256:` prefix) and the
+   bytes are snapshotted to `proofs/policy/sets/<hex>/` (write-once; an existing snapshot must
+   reproduce the hash). A policy that cannot be read makes every evaluation of the run
+   `POLICY_SET_INVALID` (integration outcome `refused`).
+2. Only a packet that passed §6 and the stateful rules is evaluated. Its `policy.input.v1` holds
+   verified facts only: `env.now` = verification time, `env.mode` `ingest`, `env.verifier`
+   (WatchTower principal, key, node); `artifact` = event namespace, producer time, producer and
+   instance, signer, `artifact_hash` (event hash) and `manifest_hash` (packet id), and claims
+   (`event_type`, `event_id`, `device_id`, `seq`, `health_status`, `compliance`, `policy_check`,
+   `posture_hash`, `policy_hash_claimed`, `alert_state`); `trust` = the producer's namespaces,
+   key ids and principal from the pinned bundle.
+3. Arbiter's `scripts/evaluate_arbiter_v1.ps1` runs as a child process of the same PowerShell
+   edition against the snapshot. It is found through `WATCHTOWER_ARBITER_ROOT` or a sibling
+   checkout named `arbiter`/`Arbiter`; its location never enters evidence.
+4. The decision is re-verified: strict canonical JSON + LF, known fields, `policy.decision.v1`,
+   engine `arbiter.v1`, `evaluated_at` = `env.now`, and `input_hash`, `policy_hash` and
+   `decision_hash` recomputed. The input and decision are stored content-addressed under
+   `proofs/policy/{inputs,decisions}/`.
+5. Routing: `allow` → accepted; `deny` → `POLICY_DENY`; `quarantine` → `POLICY_QUARANTINE`, with
+   Arbiter's obligations in the quarantine note (WatchTower carries out the routing and the alert;
+   other obligation types are recorded, not executed). Evaluator missing, failed, timed out or
+   unverifiable → `POLICY_EVALUATOR_UNAVAILABLE` / `_FAILED` / `_TIMEOUT` /
+   `POLICY_DECISION_INVALID`, all treated as deny.
+6. Before the receipt row, one `watchtower > arbiter` integration receipt is appended (§17). The
+   row then carries `policy_decision` (`watchtower.policy_gate.v1`): engine and version, decision,
+   matched rule, reasons, obligation types, the three hashes, integration outcome and error
+   token, and the integration receipt's hash.
+
+A packet rejected by the gate is not part of any stream's state, so it can be delivered again
+once the policy allows it.
+
+## 17. Integration receipts (Constellation proposal 0013)
+
+For every exchange where WatchTower is the consumer (`watchtower > arbiter`, `watchtower >
+neverlost`, `watchtower > nfl`) one `constellation.integration.receipt.v1` line is appended to
+`proofs/integrations/watchtower__<provider>.ndjson` before anything else happens with the result,
+failed exchanges included. Format: keys in the schema's order, compact, UTF-8, LF, no
+timestamps; `receipt_sha256 = sha256(line without LF)`; `prev_sha256` chains the ledger (64 zeros
+first); `error_token` is null exactly when `outcome` is `ok`. An append holds the file
+exclusively, re-verifies every line and never extends a damaged ledger.
+
+| Integration | request_sha256 | response_sha256 | carried |
+|---|---|---|---|
+| `watchtower > arbiter` | the `policy.input.v1` bytes sent (null if nothing was sent) | the decision bytes, or the evaluator's output on failure | `policy.decision.v1` = decision_hash |
+| `watchtower > neverlost` (`enroll -FromBundle`) | null | the bundle bytes | `neverlost.receipt.v1` = the authorising receipt line, when given |
+| `watchtower > nfl` (legacy handoff consumer) | null | the handoff manifest bytes | — |
+
+`enroll -FromBundle` accepts only `single-tenant/device_agent/...` principals from a bundle whose
+keys all carry `pubkey_path` + `pubkey_sha256` (re-verified against `-BundleRoot`, default the
+NeverLost root two levels above the bundle); a receipt that names `trust_bundle_sha256` must name
+this bundle. Its namespaces must be producer namespaces, or `-Namespace` must narrow them to a
+granted subset.
+
+**Witnessing.** Unwitnessed lines are handed to NFL through the outbox: a PCv1 Option A packet
+whose manifest is `watchtower.integration_witness.v1` (signed under `packet/envelope`) and whose
+payload holds the new lines of each ledger byte-identical, followed by one row in the witness
+ledger (a WatchTower hash chain naming the ranges, heads and packet id). Every ingest run does
+this; `integrations -Witness` does it on demand. Witnessing never blocks an integration. A crash
+between the packet and the row can produce a second packet for the same lines; both are true.
+

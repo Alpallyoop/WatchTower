@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/constellation.integration.receipt.v1.json",
+  "title": "Constellation integration receipt (WatchTower copy)",
+  "description": "WatchTower's copy of Constellation's constellation.integration.receipt.v1 (proposal 0013; the authority is schemas/constellation.integration.receipt.v1.json in Constellation). One line per exchange in proofs/integrations/<consumer>__<provider>.ndjson, written by the emitter before anything else. Lines keep the schema's property order (not sorted), compact, UTF-8, LF, no timestamps; receipt_sha256 = sha256(line without LF); prev_sha256 chains lines per ledger, 64 zeros first. error_token is null exactly when outcome is ok (enforced by WatchTower's writer and verifier).",
+  "type": "object",
+  "required": [
+    "schema",
+    "consumer",
+    "provider",
+    "emitted_by",
+    "contract",
+    "request_sha256",
+    "response_sha256",
+    "carried",
+    "outcome",
+    "error_token",
+    "prev_sha256"
+  ],
+  "properties": {
+    "schema": {
+      "const": "constellation.integration.receipt.v1"
+    },
+    "consumer": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "provider": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "emitted_by": {
+      "enum": [
+        "consumer",
+        "provider"
+      ]
+    },
+    "contract": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z0-9][a-z0-9_.-]*\\.v[0-9]+$"
+    },
+    "request_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the exact bytes sent; null when nothing was sent."
+    },
+    "response_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the exact bytes received; null when nothing came back."
+    },
+    "carried": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "contract",
+          "sha256"
+        ],
+        "properties": {
+          "contract": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_.-]*\\.v[0-9]+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "outcome": {
+      "enum": [
+        "ok",
+        "refused",
+        "unavailable",
+        "unknown",
+        "deferred",
+        "failed"
+      ]
+    },
+    "error_token": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "prev_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

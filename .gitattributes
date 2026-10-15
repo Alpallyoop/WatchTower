@@ -7,6 +7,7 @@
 *.ndjson text eol=lf
 *.md    text eol=lf
 *.yml   text eol=lf
+*.cmd   text eol=crlf
 
 # Test vectors and fixtures are hashed and signed byte-for-byte: never normalise them.
 test_vectors/**   -text

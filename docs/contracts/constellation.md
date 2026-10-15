@@ -59,7 +59,13 @@ ssh-keygen -Y verify -f proofs/trust/neverlost/allowed_signers \
   -s health_report_….json.sig < health_report_….json
 ```
 
-## 5. Heartbeat
+## 5. Integration receipts
+
+Constellation's invariant (proposal 0013) is met for the integrations where WatchTower is the
+consumer: see `integration-receipts.md`. Proposal 0007 asks the registry to record their state as
+`emitting`. Where Constellation consumes WatchTower (this facet), Constellation writes the receipt.
+
+## 6. Heartbeat
 
 The registry also lists `watchtower.heartbeat.v1`. WatchTower publishes verified heartbeats per
 device (`runtime/devices/<device>/heartbeat.json`), not per service; oversight does not read them

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Document | `WATCHTOWER_WBS_OFFICIAL_v2` — supersedes `docs/history/WATCHTOWER_WBS_OFFICIAL_v1.md` |
-| Date | 2026-10-13 |
+| Date | 2026-10-13, statuses updated 2026-10-15 (module 2.1.0) |
 | Scope | The registry role: deterministic verifier and telemetry receipt authority (owner decision 2026-10-13; `docs/proposals/0001-…`) |
 | Baseline | branch `finish/canonical-verifier-20261013` on `master` @ `691f1ab` via `audit/hygiene-fixes-20260826` @ `517b925` |
 | Companion | `WATCHTOWER_DOD_OFFICIAL_v2.md` (acceptance), `canonical/CURRENT_STATE.md` (evidence) |
@@ -31,18 +31,21 @@ Status vocabulary is v1's: ✅ verified by a rerunnable artifact · 🟡 partial
 | **7** | **Sealing**: checkpoint, NFL receipt packet, device pledge, ledger re-verification | ✅ | Ingest; Interop: `CPR_VERIFY_OK` on the outbox packet |
 | **8** | **Schemas** for every emitted and accepted artifact, enforced by tests | ✅ | `tests/Schemas.Tests.ps1` (15), 18 schemas |
 | **9** | **CLI** `bin/watchtower.ps1` with stable tokens | ✅ | `tests/Cli.Tests.ps1` (12) |
-| **10** | **Gate**: isolated suites, non-mutation check, schema-validated report | ✅ on Linux | `scripts/_RUN_watchtower_canonical_full_green_v2.ps1` → `suites=6 cases=196` |
-| **11** | **CI** on Ubuntu pwsh 7, Windows pwsh 7, Windows PowerShell 5.1 | 🟡 | Workflow written; never run (branch not pushed from the build environment) |
-| **12** | **Windows host run** of the gate and of `init → enroll → ingest → doctor` | 🔴 | Needs the Windows host or CI |
+| **10** | **Gate**: isolated suites, non-mutation check, schema-validated report | ✅ on Linux | `scripts/_RUN_watchtower_canonical_full_green_v2.ps1` → `suites=7 cases=222`, `WATCHTOWER_INTEROP_OK cases=10` |
+| **11** | **CI** on Ubuntu pwsh 7, Windows pwsh 7, Windows PowerShell 5.1 | 🟡 | Workflow written; runs when the branch is pushed |
+| **12** | **Windows host run** of the gate and of `init → enroll → ingest → doctor` | 🔴 | Needs the Windows host or CI: `RUN_TIER0_GATE.cmd` |
 | **13** | **Canonical docs and contracts** | ✅ | `docs/canonical/{IDENTITY,SPEC,CURRENT_STATE}.md`, `docs/contracts/*` |
 | **14** | **Hygiene** (node_modules untracked, LF attributes, CLI selftest) | ✅ in branch | Local-only items remain on the host (proposal 0005 §4) |
-| **INT-1** | live-state-surgeon emits conformant packets | 🔴 | Producer-side; proposal 0002 |
-| **INT-2** | live-state-surgeon materializer reads WatchTower's receipts | 🔴 | Producer-side; proposal 0002 items 5–7 |
-| **INT-3** | NFL witnesses WatchTower's outbox end to end | 🟡 | CPR accepts the packet; NFL run not recorded |
+| **INT-1** | live-state-surgeon emits conformant packets | ✅ | Integration (fixtures from LSS `37e7fe2`), Interop (live re-emission, byte-identical) |
+| **INT-2** | live-state-surgeon materializer reads WatchTower's receipts | 🟡 | Implemented and tested on the LSS side (`selftest_lss_integration_v1.ps1`); not re-run from here |
+| **INT-3** | NFL witnesses WatchTower's outbox end to end | 🟡 | CPR accepts receipt and witness packets; NFL commits no hash yet (proposal 0007 §3) |
 | **INT-4** | Constellation oversight reads the health facet | 🟡 | Shape matches the reader; live read not recorded |
 | **INT-5** | Global Workbench plugin panels over `evidence_index.json` | ⬜ | Plugin declares panels; not implemented |
-| **INT-6** | Registry updated for v2 outputs | 🔴 | Proposal 0003 (Constellation owner) |
+| **INT-6** | Registry updated for v2 outputs and receipt states | 🔴 | Proposal 0007 (Constellation owner) |
 | **INT-7** | CPR runs on Linux/macOS without a shim | 🔴 | Proposal 0004 (CPR owner) |
+| **INT-8** | Integration receipts (Constellation 0013) for every exchange WatchTower consumes | ✅ | Integration suite; witness packets accepted by CPR (Interop) |
+| **INT-9** | Policy gate with Arbiter (`watchtower > arbiter`, Constellation 0012) | ✅ | Integration (all outcomes), Interop (real engine, `arbiter verify`) |
+| **INT-10** | NeverLost v1 bundles and `enroll -FromBundle` | ✅ | Integration; Interop (NeverLost fail-closed verifier) |
 | **REL-1** | Default branch, licence, legacy scripts relocation | 🔴 | Owner decisions; proposal 0005 |
 | **REL-2** | v2 freeze and tag | ⬜ | After WBS 11–12 and INT-1 (DoD v2 §4) |
 
@@ -50,7 +53,7 @@ Status vocabulary is v1's: ✅ verified by a rerunnable artifact · 🟡 partial
 
 1. Push the branch and get CI green on all three hosts (WBS 11).
 2. Run the gate and a real `init → enroll → ingest → doctor` on the Windows host (WBS 12).
-3. live-state-surgeon fixes its emitter (INT-1); one real packet is accepted end to end.
+3. ~~live-state-surgeon fixes its emitter (INT-1)~~ done 2026-10-15.
 4. NFL witnesses one WatchTower outbox packet (INT-3).
 5. Freeze and tag per DoD v2 §4.
 

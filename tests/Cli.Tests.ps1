@@ -22,7 +22,11 @@ function Assert-Cli {
     Assert-WtEqual $Token $Result.Token $Result.Output
 }
 
-Invoke-WtTest 'cli: version' { $r = Invoke-Cli version; Assert-Cli $r 0 'WATCHTOWER_VERSION_OK'; Assert-WtTrue ($r.Output -match 'version=2\.0\.0') $r.Output }
+Invoke-WtTest 'cli: version is the module manifest version' {
+    $manifest = Import-PowerShellDataFile -LiteralPath (Join-Path $repo 'src/WatchTower/WatchTower.psd1')
+    $r = Invoke-Cli version; Assert-Cli $r 0 'WATCHTOWER_VERSION_OK'
+    Assert-WtTrue ($r.Output -match ('version=' + [regex]::Escape($manifest.ModuleVersion) + '\b')) $r.Output
+}
 Invoke-WtTest 'cli: help exits 0' { Assert-WtEqual 0 (Invoke-Cli help).ExitCode }
 Invoke-WtTest 'cli: unknown command fails closed' { Assert-Cli (Invoke-Cli frobnicate) 1 'WATCHTOWER_CLI_FAIL:UNKNOWN_COMMAND' }
 Invoke-WtTest 'cli: missing state root fails closed' { Assert-Cli (Invoke-Cli ingest -Root (Join-Path $work 'absent')) 1 'WATCHTOWER_INGEST_FAIL:STATE_ROOT_MISSING' }

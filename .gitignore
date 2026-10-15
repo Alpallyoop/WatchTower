@@ -53,6 +53,8 @@ config/watchtower.settings.json
 proofs/trust/neverlost/
 proofs/alerts/
 proofs/pledges/
+proofs/integrations/
+proofs/policy/
 runtime/
 
 # Project-local scratch space (WatchTower never writes to %TEMP% or AppData)

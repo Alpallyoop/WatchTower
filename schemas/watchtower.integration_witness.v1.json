@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.integration_witness.v1.json",
+  "title": "Integration receipt witness packet manifest",
+  "description": "manifest.json of packets/outbox/<packet_id> built for NFL to witness WatchTower's integration receipts (PCv1 Option A; packet_id = sha256 of these bytes; signatures/manifest.sig by WatchTower's authority under packet/envelope). Each payload file holds the listed receipt lines byte-identical to the ledger, so committing the packet commits every receipt_sha256.",
+  "type": "object",
+  "required": [
+    "schema",
+    "constitution",
+    "kind",
+    "receipt_schema",
+    "producer",
+    "producer_instance",
+    "created_time",
+    "ledgers",
+    "files"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.integration_witness.v1"
+    },
+    "constitution": {
+      "const": "packet_constitution_v1_option_a"
+    },
+    "kind": {
+      "const": "integration_receipts"
+    },
+    "receipt_schema": {
+      "const": "constellation.integration.receipt.v1"
+    },
+    "producer": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower"
+    },
+    "producer_instance": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "created_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "ledgers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "integration",
+          "ledger",
+          "payload",
+          "first_index",
+          "last_index",
+          "prev_sha256",
+          "head_sha256",
+          "receipt_sha256"
+        ],
+        "properties": {
+          "integration": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*>[a-z0-9][a-z0-9-]*$"
+          },
+          "ledger": {
+            "type": "string",
+            "pattern": "^proofs/integrations/[a-z0-9-]+__[a-z0-9-]+\\.ndjson$"
+          },
+          "payload": {
+            "type": "string",
+            "pattern": "^payload/integration_receipts/[a-z0-9-]+__[a-z0-9-]+\\.ndjson$"
+          },
+          "first_index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "last_index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "prev_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "head_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "receipt_sha256": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^payload/integration_receipts/[a-z0-9-]+__[a-z0-9-]+\\.ndjson$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

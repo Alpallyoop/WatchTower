@@ -1,0 +1,13 @@
+{
+  "schema": "policy.policyset.v1",
+  "name": "watchtower-ingest-example",
+  "version": "1.0.0",
+  "engine": "arbiter.v1",
+  "evaluation": {
+    "mode": "FIRST_MATCH_WINS"
+  },
+  "rule_files": [
+    "rules/telemetry.rules.json"
+  ],
+  "notes": "Example policy for WatchTower's optional policy gate (settings.arbiter). Evaluated after every WatchTower check passed; facts come from verified telemetry and WatchTower's pinned trust. Policy content is the operator's decision; edit or replace it."
+}

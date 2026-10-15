@@ -5,7 +5,9 @@
 .DESCRIPTION
     Commands
       init                       Create or validate this node's authority key and NeverLost trust bundle.
-      enroll                     Enroll a telemetry producer (-Principal -KeyId -PublicKey [-Namespace] [-AllowTestKey]).
+      enroll                     Enroll a telemetry producer (-Principal -KeyId -PublicKey [-Namespace] [-AllowTestKey]),
+                                 or from a NeverLost-issued bundle (-FromBundle <trust_bundle.json> -Principal
+                                 [-KeyId] [-BundleRoot] [-NeverLostReceipt <file>] [-Namespace]).
       trust                      Show the trust bundle and confirm allowed_signers is exactly derived.
       verify-packet <path>       Verify a Packet Constitution v1 (Option A) packet. Never modifies it.
       verify-telemetry <path>    Verify a signed telemetry packet against this node's pinned trust.
@@ -13,6 +15,7 @@
       ledger                     Re-verify every ledger, signature and cross-link from bytes.
       doctor                     Self-check this node ([-Publish] signs a health report for Constellation).
       index                      Rewrite runtime/evidence_index.json.
+      integrations               Re-verify the Constellation integration receipts ([-Witness] hands new ones to NFL).
       version                    Print the module version.
 
     Output is key=value lines ending in one token:
@@ -43,8 +46,12 @@ param(
     [string]$KeyId = '',
     [string]$PublicKey = '',
     [string[]]$Namespace = @(),
+    [string]$FromBundle = '',
+    [string]$BundleRoot = '',
+    [string]$NeverLostReceipt = '',
     [switch]$AllowTestKey,
     [switch]$Publish,
+    [switch]$Witness,
     [switch]$Json
 )
 
@@ -88,7 +95,23 @@ try {
             Complete-Command -Ok $true -Result $result -Fields { foreach ($k in $result.PSBase.Keys) { Write-Field $k $result[$k] } }
         }
         'enroll' {
-            if (-not $Principal -or -not $KeyId -or -not $PublicKey) { throw (& $module { New-WtFailure 'USAGE' 'enroll needs -Principal, -KeyId and -PublicKey' }) }
+            if ($FromBundle) {
+                if (-not $Principal) { throw (& $module { New-WtFailure 'USAGE' 'enroll -FromBundle needs -Principal' }) }
+                $arguments = @{ Root = $Root; BundlePath = $FromBundle; Principal = $Principal; KeyId = $KeyId; BundleRoot = $BundleRoot; NeverLostReceipt = $NeverLostReceipt; AllowTestKey = $AllowTestKey }
+                if ($Namespace.Count -gt 0) { $arguments['Namespace'] = $Namespace }
+                $r = Import-WtNeverLostProducer @arguments
+                $result = [ordered]@{
+                    principal = $r.Principal; bundle_sha256 = $r.BundleSha256; integration_receipt_sha256 = $r.IntegrationReceiptSha256
+                    keys = @($r.Enrolled | ForEach-Object { [ordered]@{ key_id = $_.KeyId; changed = $_.Changed } })
+                }
+                Complete-Command -Ok $true -Result $result -Fields {
+                    Write-Field 'principal' $r.Principal
+                    foreach ($k in $r.Enrolled) { Write-Field 'key' ('{0} changed={1}' -f $k.KeyId, $k.Changed) }
+                    Write-Field 'bundle_sha256' $r.BundleSha256
+                    Write-Field 'integration_receipt_sha256' $r.IntegrationReceiptSha256
+                }
+            }
+            if (-not $Principal -or -not $KeyId -or -not $PublicKey) { throw (& $module { New-WtFailure 'USAGE' 'enroll needs -Principal, -KeyId and -PublicKey (or -FromBundle)' }) }
             $arguments = @{ Root = $Root; Principal = $Principal; KeyId = $KeyId; PublicKey = $PublicKey; AllowTestKey = $AllowTestKey }
             if ($Namespace.Count -gt 0) { $arguments['Namespace'] = $Namespace }
             $r = Register-WtProducer @arguments
@@ -136,7 +159,11 @@ try {
         'ledger' {
             $r = Test-WtLedger -Root $Root
             $counts = [ordered]@{}
-            if ($r.Ledgers) { foreach ($ledger in @('Receipts', 'Alerts', 'Checkpoints', 'Pledges')) { $counts[$ledger.ToLowerInvariant()] = $r.Ledgers.$ledger.Count } }
+            if ($r.Ledgers) {
+                foreach ($ledger in @('Receipts', 'Alerts', 'Checkpoints', 'Pledges')) { $counts[$ledger.ToLowerInvariant()] = $r.Ledgers.$ledger.Count }
+                $counts['integration_receipts'] = [long](@($r.Ledgers.Integrations | ForEach-Object { $_.Count }) | Measure-Object -Sum).Sum
+                $counts['integration_witnesses'] = $r.Ledgers.IntegrationWitness.Count
+            }
             $result = [ordered]@{ valid = $r.Valid; code = $r.Code; counts = $counts; warnings = @($r.Warnings) }
             Complete-Command -Ok $r.Valid -Code $r.Code -Result $result -Fields {
                 foreach ($k in $counts.PSBase.Keys) { Write-Field $k $counts[$k] }
@@ -150,6 +177,28 @@ try {
             Complete-Command -Ok $r.HealthOk -Code $code -Result $r.Report -Fields {
                 foreach ($check in $r.Checks) { Write-Field $check['name'] ('{0} {1}' -f $check['code'], $check['detail']) }
                 Write-Field 'inbox_pending' $r.InboxPending
+            }
+        }
+        'integrations' {
+            $r = Test-WtIntegrations -Root $Root
+            $published = $null
+            if ($r.Valid -and $Witness) {
+                $published = Publish-WtIntegrationReceipts -Root $Root -VerificationTime (Get-Time)
+                $r = Test-WtIntegrations -Root $Root
+            }
+            $result = [ordered]@{
+                valid = $r.Valid; code = $r.Code
+                integrations = @($r.Integrations | ForEach-Object { [ordered]@{ integration = $_.Integration; count = $_.Count; head = $_.Head } })
+                witness_count = $(if ($r.Witness) { $r.Witness.Count } else { 0 })
+                witness_packet_id = $(if ($published) { $published.PacketId } else { '' })
+                warnings = @($r.Warnings)
+            }
+            Complete-Command -Ok $r.Valid -Code $r.Code -Result $result -Fields {
+                foreach ($i in $r.Integrations) { Write-Field 'integration' ('{0} count={1} head={2}' -f $i.Integration, $i.Count, $i.Head) }
+                Write-Field 'witness_count' $result['witness_count']
+                if ($published) { Write-Field 'witness_packet_id' $published.PacketId }
+                foreach ($w in $r.Warnings) { Write-Field 'warning' $w }
+                if (-not $r.Valid) { Write-Field 'detail' $r.Detail }
             }
         }
         'index' {

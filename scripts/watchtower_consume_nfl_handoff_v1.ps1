@@ -33,7 +33,30 @@ function VerifySha256Sums([string]$Root,[string]$SumsPath){
   return $count
 }
 
+# Constellation integration receipt (proposal 0013): this legacy consumer is the only code path of
+# the registered integration watchtower > nfl (contract nfl.tier0.selftest.v1), so every run writes
+# one constellation.integration.receipt.v1 through the v2 module, failed runs included.
+$script:WtModule = Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'src/WatchTower/WatchTower.psd1') -Force -PassThru
+$script:HandoffResponseSha = ''
+function Write-HandoffIntegrationReceipt([string]$Outcome,[string]$Token){
+  & $script:WtModule {
+    param($root,$response,$outcome,$token)
+    $receipt = New-WtIntegrationReceipt -Provider 'nfl' -Contract 'nfl.tier0.selftest.v1' -RequestSha256 '' -ResponseSha256 $response -Outcome $outcome -ErrorToken $token
+    [void](Add-WtIntegrationReceipt -Layout (Get-WtLayout $root) -Receipt $receipt)
+  } $RepoRoot $script:HandoffResponseSha $Outcome $Token
+}
+trap {
+  $m = [string]$_.Exception.Message
+  $code = 'NFL_HANDOFF_FAILED'
+  if($m -cmatch 'WATCHTOWER_CONSUME_NFL_FAIL: ([A-Z][A-Z0-9_]*)'){ $code = 'NFL_HANDOFF_' + $Matches[1] }
+  $outcome = 'failed'
+  if($code -eq 'NFL_HANDOFF_MISSING_MANIFEST' -or $code -eq 'NFL_HANDOFF_READ_MISSING'){ $outcome = 'unavailable' }
+  try { Write-HandoffIntegrationReceipt $outcome $code } catch { Write-Output ('INTEGRATION_RECEIPT_WRITE_FAILED: ' + $_.Exception.Message) }
+  break
+}
+
 $RepoRoot   = (Resolve-Path -LiteralPath $RepoRoot).Path
+if(-not (Test-Path -LiteralPath $HandoffDir -PathType Container)){ Fail ("MISSING_MANIFEST: handoff directory " + $HandoffDir) }
 $HandoffDir = (Resolve-Path -LiteralPath $HandoffDir).Path
 $ProofsDir  = Join-Path $RepoRoot "proofs"
 $RcptDir    = Join-Path $ProofsDir "receipts"
@@ -45,6 +68,7 @@ $SumsPath     = Join-Path $HandoffDir "sha256sums.txt"
 $FrozenDir    = Join-Path $HandoffDir "frozen"
 
 if(-not (Test-Path -LiteralPath $ManifestPath -PathType Leaf)){ Fail ("MISSING_MANIFEST: " + $ManifestPath) }
+$script:HandoffResponseSha = (Get-FileHash -LiteralPath $ManifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
 if(-not (Test-Path -LiteralPath $SumsPath -PathType Leaf)){ Fail ("MISSING_HANDOFF_SUMS: " + $SumsPath) }
 if(-not (Test-Path -LiteralPath $FrozenDir -PathType Container)){ Fail ("MISSING_FROZEN_DIR: " + $FrozenDir) }
 
@@ -85,6 +109,8 @@ $obj = [ordered]@{
   release_tag = [string]$manifest.release_tag
   verified_entries = [int]$sumCount
 }
+# The integration receipt is written before the legacy receipt (proposal 0013: locally first).
+Write-HandoffIntegrationReceipt 'ok' ''
 $line = ($obj | ConvertTo-Json -Compress)
 WriteUtf8NoBomLfText $receiptPath ($line + "`n")
 

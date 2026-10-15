@@ -30,6 +30,9 @@ function Get-WtLayout {
         Services          = & $join 'runtime/services'
         EvidenceIndex     = & $join 'runtime/evidence_index.json'
         LastIngest        = & $join 'runtime/last_ingest.json'
+        Integrations      = & $join 'proofs/integrations'
+        IntegrationWitnessLedger = & $join 'proofs/integrations/watchtower.integration_witness_record.v1.ndjson'
+        PolicyEvidence    = & $join 'proofs/policy'
     }
 }
 
@@ -51,7 +54,7 @@ function Read-WtSettings {
     $where = 'settings'
     if ((Get-WtField $settings 'schema' 'string' $where) -cne $script:WtSettingsSchema) { throw (New-WtFailure 'SETTINGS_SCHEMA' $Layout.Settings) }
     # Unknown keys are errors: a misspelt option must never be silently ignored.
-    Assert-WtKnownKeys $settings @('schema', 'max_future_skew_seconds', 'publish', 'service_bindings', 'policy_pins') 'settings'
+    Assert-WtKnownKeys $settings @('schema', 'max_future_skew_seconds', 'publish', 'service_bindings', 'policy_pins', 'arbiter') 'settings'
     $defaults = Get-WtDefaultSettings
     foreach ($key in @($defaults.PSBase.Keys)) { if (-not $settings.Contains($key)) { $settings[$key] = $defaults[$key] } }
     $skew = Get-WtField $settings 'max_future_skew_seconds' 'int' $where
@@ -86,7 +89,39 @@ function Read-WtSettings {
         if ($hasDevice -eq $hasGroup) { throw (New-WtFailure 'SETTINGS_VALUE' 'policy_pins entries need exactly one of device_id / effective_group') }
         if (-not (Test-WtHex64 ([string](Get-WtField $pin 'expected_policy_hash' 'string' 'settings.policy_pins')))) { throw (New-WtFailure 'SETTINGS_VALUE' 'expected_policy_hash must be 64 lowercase hex') }
     }
+    # Optional policy gate (watchtower > arbiter). Absent means off; present means every verified
+    # packet is evaluated and routed on Arbiter's decision. Paths are root-relative so no machine
+    # path enters the settings hash recorded in receipt packets.
+    if ($settings.Contains('arbiter')) {
+        $arbiter = Get-WtField $settings 'arbiter' 'object' $where
+        Assert-WtKnownKeys $arbiter @('policyset', 'policy_root', 'timeout_seconds') 'settings.arbiter'
+        foreach ($key in @('policyset', 'policy_root')) {
+            $value = Get-WtField $arbiter $key 'text' 'settings.arbiter'
+            try { Assert-WtSafeRelativePath $value } catch { throw (New-WtFailure 'SETTINGS_VALUE' ('arbiter.{0} must be a root-relative path: {1}' -f $key, (Get-WtFailureCode $_))) }
+        }
+        if (-not $arbiter.Contains('timeout_seconds')) { $arbiter['timeout_seconds'] = [long]120 }
+        $timeout = Get-WtField $arbiter 'timeout_seconds' 'int' 'settings.arbiter'
+        if ($timeout -lt 1 -or $timeout -gt 3600) { throw (New-WtFailure 'SETTINGS_VALUE' 'arbiter.timeout_seconds must be 1..3600') }
+    }
     return , $settings
+}
+
+function Enter-WtIngestLock {
+    # runtime/ingest.lock, created exclusively: the one writer lock for ingest and for anything
+    # else that extends WatchTower's own ledgers (the integration witness ledger).
+    param([Parameter(Mandatory = $true)]$Layout)
+    $directory = [System.IO.Path]::GetDirectoryName($Layout.LastIngest)
+    New-WtDirectory $directory
+    $path = [System.IO.Path]::Combine($directory, 'ingest.lock')
+    try { $stream = New-Object System.IO.FileStream($path, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None) }
+    catch { throw (New-WtFailure 'INGEST_LOCKED' 'another ingest or witness run is in progress, or runtime/ingest.lock was left by a crash') }
+    return [pscustomobject]@{ Path = $path; Stream = $stream }
+}
+
+function Exit-WtIngestLock {
+    param([Parameter(Mandatory = $true)]$Lock)
+    $Lock.Stream.Dispose()
+    Remove-Item -LiteralPath $Lock.Path -Force -ErrorAction SilentlyContinue
 }
 
 function Assert-WtKnownKeys {

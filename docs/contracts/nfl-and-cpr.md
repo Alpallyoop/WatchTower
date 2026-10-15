@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | Direction | WatchTower publishes receipt packets; NFL polls, verifies with CPR, then witnesses |
-| NFL configuration | `nfl/config/inbox_registry.json`: inbox `watchtower-outbox`, path `C:/dev/watchtower/packets/outbox`, mode `packet` |
+| NFL configuration | `nfl/config/inbox_registry.json`: inbox `watchtower-outbox`, path `C:/dev/watchtower/packets/outbox` (stale: must point at this project's `packets/outbox` under the S: dev root, proposal 0007 §3), mode `packet` |
 | Law | AnchorMark: finalize the packet in the outbox, write a local chained signed pledge, NFL picks it up |
-| Status | WatchTower side implemented; the real CPR verifier returns `CPR_VERIFY_OK` on WatchTower's packets (`tests/Interop.Tests.ps1`). An end-to-end NFL witness run has not been recorded yet. |
+| Status | WatchTower side implemented; the real CPR verifier returns `CPR_VERIFY_OK` on WatchTower's receipt packets and integration-witness packets (`tests/Interop.Tests.ps1`). NFL's witness step records CPR's verdict but commits no hash and runs only on Windows from `C:\dev` (proposal 0007 §3). |
 
 ## 1. The packet
 
@@ -63,9 +63,18 @@ On Linux and macOS, CPR's relative-path helper throws for every packet (it relie
 `Uri` behaviour); the interop suite substitutes an equivalent helper there and runs every packet
 rule unmodified. The fix belongs in CPR: `docs/proposals/0004-cpr-relative-path-on-non-windows.md`.
 
-## 5. Legacy handoff (NFL → WatchTower)
+## 5. Integration-witness packets
 
-The v1 scripts `scripts/watchtower_consume_nfl_handoff_v1.ps1` and its frozen vector
+Besides receipt packets, the outbox carries `watchtower.integration_witness.v1` packets: the
+`constellation.integration.receipt.v1` lines WatchTower wrote as a consumer
+(`integration-receipts.md`). Same PCv1 rules, manifest signed under `packet/envelope`.
+
+## 6. Legacy handoff (NFL → WatchTower)
+
+The v1 script `scripts/watchtower_consume_nfl_handoff_v1.ps1` and its frozen vector
 (`test_vectors/handoff_frozen/watchtower_nfl_handoff_green_20260308`) consume an NFL handoff
-bundle (`watchtower.handoff.manifest.v1` in the registry). They are unchanged and are not part of
-the v2 gate; see `docs/canonical/CURRENT_STATE.md`.
+bundle (`watchtower.handoff.manifest.v1` / `nfl.tier0.selftest.v1` in the registry). It is the
+only code path of the registered integration `watchtower > nfl`, so since 2.1 every run writes a
+`watchtower > nfl` integration receipt (ok, failed or unavailable; tested in
+`tests/Integration.Tests.ps1`). NFL no longer produces handoff bundles; proposal 0007 asks the
+registry to mark the edge legacy.

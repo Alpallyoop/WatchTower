@@ -43,6 +43,27 @@ function Export-WtEvidenceIndex {
     }
     $index['ledgers'] = $ledgers
 
+    # Constellation integration receipts (constellation.integration.receipt.v1) and their witness.
+    $integrations = New-WtObject
+    $integrations['path'] = Get-WtRootRelative $layout $layout.Integrations
+    $integrations['receipt_schema'] = $script:WtIntegrationReceiptSchema
+    $items = New-Object System.Collections.ArrayList
+    foreach ($path in (Get-WtIntegrationLedgers $layout)) {
+        $item = New-WtObject
+        $item['integration'] = [System.IO.Path]::GetFileNameWithoutExtension($path).Replace('__', '>')
+        $item['path'] = Get-WtRootRelative $layout $path
+        try { $ledger = Read-WtIntegrationLedger $path; $item['state'] = 'verified'; $item['count'] = $ledger.Count; $item['head'] = $ledger.Head }
+        catch { $item['state'] = 'invalid'; $item['code'] = Get-WtFailureCode $_; $item['count'] = 0; $item['head'] = '' }
+        [void]$items.Add($item)
+    }
+    $integrations['ledgers'] = $items
+    $witness = New-WtObject
+    $witness['path'] = Get-WtRootRelative $layout $layout.IntegrationWitnessLedger
+    try { $chain = Open-WtHashChain -Path $layout.IntegrationWitnessLedger -HashField 'witness_hash' -PrevField 'prev_witness_hash'; $witness['state'] = 'verified'; $witness['count'] = $chain.Count; $witness['head'] = $chain.Head }
+    catch { $witness['state'] = 'invalid'; $witness['code'] = Get-WtFailureCode $_; $witness['count'] = 0; $witness['head'] = '' }
+    $integrations['witness'] = $witness
+    $index['integrations'] = $integrations
+
     $devices = New-Object System.Collections.ArrayList
     if ([System.IO.Directory]::Exists($layout.Devices)) {
         $ids = [string[]]@([System.IO.Directory]::GetDirectories($layout.Devices) | ForEach-Object { [System.IO.Path]::GetFileName($_) })

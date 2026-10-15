@@ -25,6 +25,7 @@ example.
 | Device panel | `devices[]`: `device_id`, `folder` and `documents` (latest heartbeat / health / policy) |
 | Receipt panel | `ledgers.telemetry_receipts`, `ledgers.checkpoints`, `ledgers.pledges`, `outbox` (`path`, `packet_count`), `last_ingest` |
 | Service health | `services[]`: `service_id`, `latest_health_report`, `report_count` |
+| Integrations | `integrations`: each `constellation.integration.receipt.v1` ledger (`integration`, `path`, `state`, `count`, `head`) and the NFL `witness` ledger |
 
 A broken chain appears as `state: invalid` with its failure code; it is never shown as healthy.
 
@@ -38,3 +39,4 @@ prints canonical JSON followed by the result token (SPEC §13).
 | `watchtower.openAlertStream` | read `proofs/alerts/watchtower.alert.v1.ndjson` after `ledger` |
 | `watchtower.openDeviceState` | read `runtime/devices/<device>/*.json` (+ `.sig`) |
 | health check | `doctor -Json` |
+| integration receipts | `integrations -Json` |

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Proposed to the Constellation owner |
+| Status | Superseded by proposal 0007 (restated against registry 2.16.0; the `watchtower > cpr` row is withdrawn) |
 | Date | 2026-10-13 |
 | Affects | `Constellation/registry/services.json`, `integrations.json`, `evidence_sources.json` (no change), service-map receipt |
 

@@ -7,9 +7,9 @@
 | Layer | `evidence.telemetry-verification` |
 | Role | Deterministic verifier and telemetry receipt authority. |
 | Standalone-first | yes: verifies, records and re-verifies with nothing but PowerShell and OpenSSH |
-| Module | `src/WatchTower` (`WatchTower.psd1`), version 2.0.0 |
+| Module | `src/WatchTower` (`WatchTower.psd1`), version 2.1.0 |
 | Hosts | Windows PowerShell 5.1 and PowerShell 7 on Windows, Linux and macOS |
-| Runtime dependency | OpenSSH `ssh-keygen` (Ed25519 SSHSIG signing and verification) |
+| Runtime dependency | OpenSSH `ssh-keygen` (Ed25519 SSHSIG signing and verification). Optional: an Arbiter checkout, only when the policy gate is configured |
 
 ## What WatchTower is
 
@@ -21,7 +21,9 @@ check without trusting WatchTower's word for it:
 - signed, latest-per-device heartbeat, health and policy-attestation documents;
 - signed health facets that Constellation's oversight reads per service;
 - hash-chained alert evidence (`watchtower.alert.v1`);
-- signed checkpoint seals, a CPR-valid receipt packet for NFL, and a chained device pledge.
+- signed checkpoint seals, a CPR-valid receipt packet for NFL, and a chained device pledge;
+- one `constellation.integration.receipt.v1` per exchange with an upstream service (Arbiter,
+  NeverLost, NFL), handed to NFL for witnessing (Constellation proposal 0013).
 
 ## What WatchTower is not
 
@@ -31,8 +33,9 @@ From the registry (`does_not_own`) and the scope decision recorded in
 - It does not capture or materialize live machine state. live-state-surgeon does.
 - It does not hold application workflow state.
 - It does not issue identities. NeverLost does; WatchTower uses a NeverLost-format trust bundle.
-- It does not decide policy. Expected policy hashes are pinned in settings; WatchTower reports
-  drift, it does not enforce or author policy.
+- It does not decide or author policy. Expected policy hashes are pinned in settings and drift is
+  reported. When the optional policy gate is on, Arbiter decides allow / deny / quarantine and
+  WatchTower only routes on that decision and keeps the proof (SPEC §16).
 - It does not witness its own receipts. NFL does, after CPR verification.
 
 ## Signing identity
@@ -81,8 +84,10 @@ given, and a producer can never be enrolled under WatchTower's own principal.
 ```
 live-state-surgeon ──signed telemetry packets──▶ WatchTower ──receipts, alerts, evidence──▶ live-state-surgeon
                                                     │                                      Constellation (health facet)
-NeverLost ──trust bundle format, principal──────────┘                                      Global Workbench (index, settings)
-                                                    └──receipt packet (packets/outbox)──▶ NFL (after CPR_VERIFY_OK)
+NeverLost ──trust bundle format, principal,─────────┤                                      Global Workbench (index, settings)
+            producer bundles (enroll -FromBundle)   │
+Arbiter ◀──policy.input.v1 / policy.decision.v1─────┤  (optional policy gate)
+                                                    └──receipt + integration-witness packets (packets/outbox)──▶ NFL (after CPR_VERIFY_OK)
 ```
 
 Constants that define this identity live in `src/WatchTower/Private/Constants.ps1`. Changing any

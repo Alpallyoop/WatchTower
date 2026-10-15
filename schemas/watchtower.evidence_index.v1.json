@@ -282,6 +282,100 @@
     },
     "last_ingest": {
       "type": "string"
+    },
+    "integrations": {
+      "type": "object",
+      "description": "Constellation integration receipts (constellation.integration.receipt.v1) WatchTower emitted as a consumer, and the NFL witness ledger.",
+      "required": [
+        "path",
+        "receipt_schema",
+        "ledgers",
+        "witness"
+      ],
+      "properties": {
+        "path": {
+          "const": "proofs/integrations"
+        },
+        "receipt_schema": {
+          "const": "constellation.integration.receipt.v1"
+        },
+        "ledgers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "state",
+              "count",
+              "head"
+            ],
+            "properties": {
+              "integration": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*>[a-z0-9][a-z0-9-]*$"
+              },
+              "path": {
+                "type": "string"
+              },
+              "state": {
+                "enum": [
+                  "verified",
+                  "invalid"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "head": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "witness": {
+          "type": "object",
+          "required": [
+            "path",
+            "state",
+            "count",
+            "head"
+          ],
+          "properties": {
+            "integration": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*>[a-z0-9][a-z0-9-]*$"
+            },
+            "path": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "verified",
+                "invalid"
+              ]
+            },
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "head": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

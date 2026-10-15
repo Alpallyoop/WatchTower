@@ -143,10 +143,11 @@
         "body",
         "complete",
         "state",
+        "policy",
         "route",
         "record"
       ],
-      "description": "Verification stage reached. 'record': the packet's own fields could not be recorded, so it was rejected with none of them (RECEIPT_UNRECORDABLE)."
+      "description": "Verification stage reached. 'record': the packet's own fields could not be recorded, so it was rejected with none of them (RECEIPT_UNRECORDABLE). 'policy': every WatchTower check passed and the policy gate (Arbiter) did not allow the packet."
     },
     "signer_verified": {
       "type": "boolean"
@@ -195,6 +196,97 @@
     "routed_to": {
       "type": "string",
       "pattern": "^packets/(receipts|quarantine)/[^/]+$"
+    },
+    "policy_decision": {
+      "type": "object",
+      "description": "Present only when the policy gate is configured (settings.arbiter) and the packet passed every WatchTower check: the Arbiter decision WatchTower routed on (watchtower.policy_gate.v1). Hashes are Arbiter's (sha256: prefix) and are recomputed by WatchTower; the input, decision and policy snapshot are kept under proofs/policy/. integration_receipt_sha256 links the constellation.integration.receipt.v1 written for this exchange (proofs/integrations/watchtower__arbiter.ndjson).",
+      "required": [
+        "schema",
+        "engine",
+        "engine_version",
+        "decision",
+        "matched_rule_id",
+        "reasons",
+        "obligations",
+        "policy_hash",
+        "input_hash",
+        "decision_hash",
+        "outcome",
+        "error_token",
+        "integration_receipt_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "watchtower.policy_gate.v1"
+        },
+        "engine": {
+          "const": "arbiter.v1"
+        },
+        "engine_version": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "decision": {
+          "enum": [
+            "allow",
+            "deny",
+            "quarantine"
+          ],
+          "description": "Evaluator failures are recorded as deny (fail closed)."
+        },
+        "matched_rule_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "reasons": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "maxLength": 142
+          }
+        },
+        "obligations": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "maxLength": 78
+          },
+          "description": "Obligation types of a quarantine decision; full obligations are in the quarantine note."
+        },
+        "policy_hash": {
+          "type": "string",
+          "pattern": "^(|sha256:[0-9a-f]{64})$"
+        },
+        "input_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "decision_hash": {
+          "type": "string",
+          "pattern": "^(|sha256:[0-9a-f]{64})$"
+        },
+        "outcome": {
+          "enum": [
+            "ok",
+            "refused",
+            "unavailable",
+            "unknown",
+            "failed"
+          ],
+          "description": "constellation.integration.receipt.v1 outcome of the exchange."
+        },
+        "error_token": {
+          "type": "string",
+          "pattern": "^(|[A-Z][A-Z0-9_]*)$"
+        },
+        "integration_receipt_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
     },
     "receipt_id": {
       "type": "string",

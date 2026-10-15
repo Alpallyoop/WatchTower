@@ -26,7 +26,8 @@ $owned = @(
     'watchtower.receipt_packet.v1', 'watchtower.receipt_artifact.v1',
     'watchtower.heartbeat.v1', 'watchtower.health_report.v1', 'watchtower.policy_attest.v1',
     'watchtower.evidence_index.v1', 'watchtower.settings.v1', 'watchtower.ingest_run.v1',
-    'watchtower.doctor_report.v1', 'watchtower.quarantine_note.v1', 'watchtower.test_run.v1')
+    'watchtower.doctor_report.v1', 'watchtower.quarantine_note.v1', 'watchtower.test_run.v1',
+    'constellation.integration.receipt.v1', 'watchtower.integration_witness.v1', 'watchtower.integration_witness_record.v1')
 
 # --- the schemas themselves -----------------------------------------------------------------
 Invoke-WtTest 'schemas: every owned schema is canonical-parseable and uses only supported keywords' {
@@ -124,11 +125,14 @@ Invoke-WtTest 'inbound: reference events, posture and manifests match their sche
     }
     foreach ($manifest in $inboundManifests) { Assert-MatchesSchema (Get-SchemaPath 'packet.manifest.v1') $manifest 'reference manifest' }
 }
-Invoke-WtTest 'inbound: the real live-state-surgeon event matches; its manifest shape too (the own-signature defect is a verifier rule)' {
-    $fixture = Join-Path $repo 'tests/fixtures/interop/live-state-surgeon/pkt-hb-node-ok'
-    Assert-MatchesSchema (Get-SchemaPath 'watchtower.telemetry_event.v1') (Read-WtJsonFile -Path (Join-Path $fixture 'payload/telemetry_event.json') -Object) 'LSS event'
-    Assert-MatchesSchema (Get-SchemaPath 'packet.manifest.v1') (Read-WtJsonFile -Path (Join-Path $fixture 'manifest.json') -Object) 'LSS manifest'
-    Assert-WtEqual 'MANIFEST_LISTS_OWN_SIGNATURE' (Test-WtTelemetryPacket -Path $fixture -TrustBundle (Read-WtJsonFile -Path (Join-Path $root 'proofs/trust/neverlost/trust_bundle.json') -Object)).Code
+Invoke-WtTest 'inbound: the real live-state-surgeon events and manifests match their schemas' {
+    foreach ($name in @('pkt-hb-node-ok', 'pkt-hr-node-ok', 'pkt-pa-node-drift')) {
+        $fixture = Join-Path $repo ('tests/fixtures/interop/live-state-surgeon/' + $name)
+        Assert-MatchesSchema (Get-SchemaPath 'watchtower.telemetry_event.v1') (Read-WtJsonFile -Path (Join-Path $fixture 'payload/telemetry_event.json') -Object) ('LSS event ' + $name)
+        Assert-MatchesSchema (Get-SchemaPath 'packet.manifest.v1') (Read-WtJsonFile -Path (Join-Path $fixture 'manifest.json') -Object) ('LSS manifest ' + $name)
+        # lss-dev is not enrolled on this node: pinned trust decides, nothing in the packet does.
+        Assert-WtEqual 'SIGNER_NOT_TRUSTED' (Test-WtTelemetryPacket -Path $fixture -TrustBundle (Read-WtJsonFile -Path (Join-Path $root 'proofs/trust/neverlost/trust_bundle.json') -Object)).Code
+    }
 }
 Invoke-WtTest 'receipts: every ok and reject row matches watchtower.telemetry.receipt.v1' {
     $rows = Get-ChainRows (Join-Path $root 'proofs/receipts/watchtower.telemetry.receipt.v1.ndjson') 'receipt_hash' 'prev_receipt_hash'

@@ -34,6 +34,9 @@ $script:WtEvidenceIndexSchema = 'watchtower.evidence_index.v1'
 $script:WtIngestRunSchema = 'watchtower.ingest_run.v1'
 $script:WtSettingsSchema = 'watchtower.settings.v1'
 $script:WtDoctorSchema = 'watchtower.doctor_report.v1'
+$script:WtIntegrationWitnessSchema = 'watchtower.integration_witness.v1'          # outbox packet manifest
+$script:WtIntegrationWitnessRecordSchema = 'watchtower.integration_witness_record.v1'  # witness ledger row
+$script:WtPolicyGateSchema = 'watchtower.policy_gate.v1'                          # receipt policy_decision block
 
 $script:WtIdentifierPattern = '^[A-Za-z0-9][A-Za-z0-9._:\-]{0,127}$'
 # Service ids name Constellation repository folders (registry 'repository_dir', e.g.

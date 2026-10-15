@@ -59,9 +59,9 @@ function Get-WtTelemetryFacts {
     param([Parameter(Mandatory = $true)]$Verdict, [Parameter(Mandatory = $true)]$Settings)
     $facts = [pscustomobject]@{ HealthStatus = ''; PostureHash = ''; Compliance = ''; PolicyHashClaimed = ''; PolicyHashExpected = ''; PolicyCheck = 'n/a' }
     # Facts are taken only from bodies that passed the body rules ('complete', or rejected
-    # afterwards by replay / ordering / clock / routing rules): never from a body that failed
+    # afterwards by replay / ordering / clock / policy / routing rules): never from a body that failed
     # validation, so every recorded fact is well-formed and bounded.
-    if (-not $Verdict.SignerVerified -or @('complete', 'state', 'route') -cnotcontains $Verdict.Stage) { return $facts }
+    if (-not $Verdict.SignerVerified -or @('complete', 'state', 'policy', 'route') -cnotcontains $Verdict.Stage) { return $facts }
     if (-not ($Verdict.Event -is [System.Collections.IDictionary])) { return $facts }
     $body = $Verdict.Event['body']
     if (-not ($body -is [System.Collections.IDictionary])) { return $facts }
@@ -196,6 +196,8 @@ function ConvertTo-WtIngestRecord {
     $record['checkpoint_hash'] = $Summary.CheckpointHash
     $record['outbox_packet_id'] = $Summary.OutboxPacketId
     $record['pledge_hash'] = $Summary.PledgeHash
+    if ($Summary.IntegrationWitnessPacketId) { $record['integration_witness_packet_id'] = $Summary.IntegrationWitnessPacketId }
+    if ($Summary.IntegrationWitnessError) { $record['integration_witness_error'] = $Summary.IntegrationWitnessError }
     $items = New-Object System.Collections.ArrayList
     foreach ($result in $Summary.Results) {
         $item = New-WtObject

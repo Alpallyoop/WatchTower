@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Proposed. Implemented on the WatchTower side in v2.0.0; canonical documents still to be updated by their owners |
+| Status | Implemented on the WatchTower side since v2.0.0 and reflected in the registry (live-state-surgeon owns capture and emits for WatchTower to verify, registry 2.16.0). `docs/spec-watchtower.md` is kept as history |
 | Date | 2026-10-13 |
 | Affects | `docs/spec-watchtower.md`, `README.md`, the v1 state engine scripts, local-only capture tooling, Constellation registry (no change needed) |
 

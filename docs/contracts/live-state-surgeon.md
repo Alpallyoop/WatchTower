@@ -4,7 +4,7 @@
 |---|---|
 | Direction | live-state-surgeon (producer) → WatchTower (verifier) → live-state-surgeon (consumer of receipts and alerts) |
 | Registry | `integrations.json`: consumer `live-state-surgeon`, provider `watchtower`, contracts `watchtower.telemetry_event.v1`, `watchtower.telemetry.receipt.v1`, `watchtower.alert.v1`, `watchtower.heartbeat.v1` |
-| Status | WatchTower side implemented and tested. Producer side does not conform yet: see `docs/proposals/0002-lss-telemetry-emitter-conformance.md` |
+| Status | Implemented and proven on both sides: packets from live-state-surgeon's own emitter (commit `37e7fe2`) are accepted end to end (`tests/Integration.Tests.ps1`), and re-emitted live when an LSS checkout is present (`tests/Interop.Tests.ps1`). Proposal 0002 is done |
 
 ## 1. What live-state-surgeon sends
 
@@ -129,8 +129,12 @@ format in the local culture. Consumers comparing `producer_time` MUST compare th
 
 ## 4. Conformance evidence
 
-`tests/fixtures/interop/live-state-surgeon/pkt-hb-node-ok` is the only packet
-live-state-surgeon has emitted. `tests/Interop.Tests.ps1` proves that its PCv1 structure, envelope,
-namespace and event signature are correct and that WatchTower rejects it only with
-`MANIFEST_LISTS_OWN_SIGNATURE`. `tests/support/ReferenceProducer.ps1` is a conformant reference
-emitter that live-state-surgeon can compare against byte-for-byte.
+`tests/fixtures/interop/live-state-surgeon/` holds a heartbeat, a health report and a
+(noncompliant) policy attestation emitted by live-state-surgeon's own emitter
+(`PROVENANCE.md`). WatchTower accepts all three, publishes the device documents and the
+`live-state-surgeon` health facet, and raises `POLICY_NONCOMPLIANT` for the attestation. With an
+LSS checkout present, Interop re-emits them with LSS's current code and requires byte-identical
+packets. `tests/support/ReferenceProducer.ps1` remains a conformant reference emitter.
+
+Production nodes should use NeverLost-issued `single-tenant/device_agent/device/<id>` principals
+(`enroll -FromBundle`); the `lss-dev` key is DEV ONLY.

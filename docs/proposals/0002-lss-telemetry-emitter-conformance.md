@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Proposed to the live-state-surgeon owner. Nothing in WatchTower needs to change |
+| Status | Done (2026-10-15). live-state-surgeon fixed its emitter (LSS commit `37e7fe2`); WatchTower accepts its packets end to end (`tests/Integration.Tests.ps1`, and live in `tests/Interop.Tests.ps1`). The old fixture was replaced |
 | Date | 2026-10-13 |
 | Contract | `docs/contracts/live-state-surgeon.md` |
 | Evidence | `tests/fixtures/interop/live-state-surgeon/pkt-hb-node-ok` and `tests/Interop.Tests.ps1`; live-state-surgeon source read at its current checkout |

@@ -90,6 +90,33 @@
         },
         "additionalProperties": false
       }
+    },
+    "arbiter": {
+      "type": "object",
+      "description": "Optional policy gate (registry integration watchtower > arbiter). Absent: off. Present: every fully verified packet is evaluated by Arbiter and routed on its decision; evaluator failures quarantine (fail closed). The engine is located through WATCHTOWER_ARBITER_ROOT or a sibling arbiter checkout, never through settings.",
+      "required": [
+        "policyset",
+        "policy_root"
+      ],
+      "properties": {
+        "policyset": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Root-relative path of the policy.policyset.v1 document."
+        },
+        "policy_root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Root-relative directory that policyset.rule_files[] are relative to."
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "Per evaluation (default 120). A timeout is recorded as outcome unknown and quarantines the packet."
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

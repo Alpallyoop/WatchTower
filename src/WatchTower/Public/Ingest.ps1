@@ -28,8 +28,9 @@ function Invoke-WtIngest {
     $verifiedAt = ConvertFrom-WtUtcTime $VerificationTime 'VerificationTime'
     $layout = Get-WtLayout $Root
     $settings = Read-WtSettings $layout
-    $bundle = Read-WtTrustBundle $layout.TrustBundle
+    $bundle = Read-WtTrustBundle $layout.TrustBundle -Root $layout.Root
     $authority = Get-WtAuthority -Layout $layout -Bundle $bundle
+    $gate = Read-WtPolicyGate -Layout $layout -Settings $settings
     foreach ($directory in @($layout.Inbox, $layout.Accepted, $layout.Quarantine, $layout.Outbox, [System.IO.Path]::GetDirectoryName($layout.LastIngest))) { New-WtDirectory $directory }
 
     $lock = [System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($layout.LastIngest), 'ingest.lock')
@@ -51,8 +52,20 @@ function Invoke-WtIngest {
 
             $verdict = Test-WtTelemetryPacket -Path $source -TrustBundle $bundle
             if ($verdict.Valid) { Set-WtStatefulVerdict -Verdict $verdict -State $state -VerifiedAt $verifiedAt -SkewSeconds $skew }
-            $accepted = [bool]$verdict.Valid
             $facts = Get-WtTelemetryFacts -Verdict $verdict -Settings $settings
+            # Policy gate (optional): only fully verified packets reach Arbiter; anything but
+            # allow, including any evaluator failure, is a rejection at stage 'policy'.
+            $policy = $null
+            if ($null -ne $gate -and $verdict.Valid) {
+                $policy = Invoke-WtPolicyGate -Gate $gate -Layout $layout -Verdict $verdict -Facts $facts -Bundle $bundle -Authority $authority -VerifiedUtc $VerificationTime
+                if ($policy.Decision -cne 'allow') {
+                    $verdict.Valid = $false
+                    $verdict.Code = $policy.Code
+                    $verdict.Detail = 'WT_FAIL:' + $policy.Code + ': ' + $policy.Detail
+                    $verdict.Stage = 'policy'
+                }
+            }
+            $accepted = [bool]$verdict.Valid
 
             if ($accepted) {
                 $destination = Join-Path $layout.Accepted $verdict.PacketId
@@ -71,10 +84,12 @@ function Invoke-WtIngest {
             try {
                 $row = New-WtReceiptRow -Verdict $verdict -Accepted $accepted -Facts $facts -Authority $authority -VerifiedUtc $VerificationTime `
                     -PacketRef $name -RoutedTo (Get-WtRootRelative $layout $destination) -Roots @($layout.Root, $source)
+                if ($null -ne $policy) { $row['policy_decision'] = ConvertTo-WtPolicyBlock $policy }
                 $row['prev_receipt_hash'] = $receipts.Head
                 $row['receipt_id'] = Get-WtCanonicalHash $row
             }
             catch {
+                $policy = $null
                 # No single packet may stop the pipeline: if its receipt cannot be built from
                 # what it claims, it is rejected with nothing taken from it but its name.
                 $verdict = New-WtUnrecordableVerdict -Code 'RECEIPT_UNRECORDABLE'
@@ -96,6 +111,11 @@ function Invoke-WtIngest {
                 $note['code'] = $verdict.Code
                 $note['receipt_hash'] = $receiptHash
                 $note['receipt_time'] = $VerificationTime
+                if ($null -ne $policy -and $policy.Decision -cne 'allow') {
+                    $note['policy_decision'] = $policy.Decision
+                    $note['policy_decision_hash'] = $policy.DecisionHash
+                    $note['obligations'] = @($policy.Obligations | ForEach-Object { Copy-WtJsonValue $_ })
+                }
                 Write-WtJsonFile -Path ($destination + '.rejection.json') -Value $note
             }
             else {
@@ -121,7 +141,7 @@ function Invoke-WtIngest {
             Processed = $results.Count; Accepted = @($results | Where-Object { $_.Accepted }).Count
             Rejected = @($results | Where-Object { -not $_.Accepted }).Count; Ignored = $ignored.ToArray()
             ReceiptHead = $receipts.Head; ReceiptCount = $receipts.Count; AlertHead = $alerts.Head; AlertCount = $alerts.Count
-            CheckpointHash = ''; OutboxPacketId = ''; PledgeHash = ''; Results = $results.ToArray()
+            CheckpointHash = ''; OutboxPacketId = ''; PledgeHash = ''; IntegrationWitnessPacketId = ''; IntegrationWitnessError = ''; Results = $results.ToArray()
         }
         # Sealing resumes from the ledgers, not from this run: if a previous run stopped after
         # appending receipts but before sealing, the unsealed range is sealed now, and a
@@ -154,6 +174,16 @@ function Invoke-WtIngest {
                 }
                 $summary.OutboxPacketId = $outboxPacketId
             }
+        }
+        # Integration receipts (this run's and any left unwitnessed) go to NFL through the outbox.
+        # Witnessing never blocks: a failure here is recorded in the run record and retried by
+        # the next run (or `integrations -Witness`); receipts already written stay authoritative.
+        if ($settings['publish']['nfl_outbox']) {
+            try {
+                $witness = Publish-WtIntegrationWitness -Layout $layout -Authority $authority -VerifiedUtc $VerificationTime
+                if ($null -ne $witness) { $summary.IntegrationWitnessPacketId = $witness.PacketId }
+            }
+            catch { $summary.IntegrationWitnessError = Get-WtFailureCode $_ }
         }
         Write-WtJsonFile -Path $layout.LastIngest -Value (ConvertTo-WtIngestRecord -Summary $summary -VerifiedUtc $VerificationTime -Authority $authority)
         [void](Export-WtEvidenceIndex -Root $layout.Root -GeneratedUtc $VerificationTime)

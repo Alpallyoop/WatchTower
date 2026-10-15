@@ -22,6 +22,9 @@ function Assert-WtTrustBundle {
     if ($principals.Count -lt 1) { throw (New-WtFailure 'TRUST_BUNDLE_EMPTY' $Source) }
     $seenPrincipals = @{}
     $seenKeys = @{}
+    # Key ids are unique across the whole bundle (NeverLost v1 rule KEY_ID_DUPLICATE), not only
+    # within a principal: an allowed_signers consumer must never see one key id twice.
+    $seenKeyIds = @{}
     foreach ($entry in $principals) {
         $principal = Get-WtField $entry 'principal' 'text' $Source
         if ($principal -cnotmatch $script:WtPrincipalPattern) { throw (New-WtFailure 'TRUST_PRINCIPAL_FORMAT' $principal) }
@@ -29,7 +32,6 @@ function Assert-WtTrustBundle {
         $seenPrincipals[$principal] = $true
         $keys = Get-WtField $entry 'keys' 'array' $principal
         if ($keys.Count -lt 1) { throw (New-WtFailure 'TRUST_PRINCIPAL_NO_KEYS' $principal) }
-        $seenKeyIds = @{}
         foreach ($key in $keys) {
             $keyId = Get-WtField $key 'key_id' 'text' $principal
             if ($keyId -cnotmatch $script:WtKeyIdPattern) { throw (New-WtFailure 'TRUST_KEY_ID_FORMAT' $keyId) }
@@ -49,15 +51,42 @@ function Assert-WtTrustBundle {
                 $seenNamespaces[$namespace] = $true
             }
             if ((Test-WtField $key 'pubkey_sha256') -and -not (Test-WtHex64 ([string]$key['pubkey_sha256']))) { throw (New-WtFailure 'TRUST_PUBKEY_SHA256_FORMAT' $keyId) }
+            if (Test-WtField $key 'pubkey_path') {
+                # NeverLost v1: pubkey_sha256 is the SHA-256 of the exact bytes at pubkey_path.
+                $relative = Get-WtField $key 'pubkey_path' 'text' $keyId
+                try { Assert-WtSafeRelativePath $relative } catch { throw (New-WtFailure 'TRUST_PUBKEY_PATH' ('{0}: {1}' -f $keyId, (Get-WtFailureCode $_))) }
+                if (-not (Test-WtField $key 'pubkey_sha256')) { throw (New-WtFailure 'TRUST_PUBKEY_SHA256_MISSING' $keyId) }
+            }
+        }
+    }
+}
+
+function Assert-WtTrustKeyMaterial {
+    # Recomputes every key file claim against $Root (NeverLost NL-VerifyKeyMaterial): the file
+    # at pubkey_path exists, hashes to pubkey_sha256, and holds exactly the bundle's pubkey.
+    param([Parameter(Mandatory = $true)]$Bundle, [Parameter(Mandatory = $true)][string]$Root)
+    foreach ($entry in $Bundle['principals']) {
+        foreach ($key in $entry['keys']) {
+            if (-not (Test-WtField $key 'pubkey_path')) { continue }
+            $keyId = [string]$key['key_id']
+            $file = [System.IO.Path]::Combine($Root, ([string]$key['pubkey_path']).Replace('/', [string][System.IO.Path]::DirectorySeparatorChar))
+            if (-not [System.IO.File]::Exists($file)) { throw (New-WtFailure 'TRUST_PUBKEY_FILE_MISSING' ('{0} {1}' -f $keyId, $key['pubkey_path'])) }
+            if ((Get-WtSha256 -Path $file) -cne [string]$key['pubkey_sha256']) { throw (New-WtFailure 'TRUST_PUBKEY_SHA256_MISMATCH' $keyId) }
+            $core = ''
+            try { $core = ConvertTo-WtPublicKey (Read-WtText $file) } catch { throw (New-WtFailure 'TRUST_PUBKEY_FILE_FORMAT' $keyId) }
+            if ($core -cne [string]$key['pubkey']) { throw (New-WtFailure 'TRUST_PUBKEY_FILE_MISMATCH' $keyId) }
         }
     }
 }
 
 function Read-WtTrustBundle {
-    param([Parameter(Mandatory = $true)][string]$Path)
+    # -Root: the directory pubkey_path entries are relative to (the state root for WatchTower's own
+    # bundle); when given, every key file is re-verified.
+    param([Parameter(Mandatory = $true)][string]$Path, [string]$Root = '')
     if (-not [System.IO.File]::Exists($Path)) { throw (New-WtFailure 'TRUST_BUNDLE_MISSING' $Path) }
     $bundle = Read-WtJsonFile -Path $Path -Object
     Assert-WtTrustBundle -Bundle $bundle -Source $Path
+    if ($Root) { Assert-WtTrustKeyMaterial -Bundle $bundle -Root $Root }
     return , $bundle
 }
 

@@ -3,11 +3,11 @@
     Runs the WatchTower test suites and emits the release gate token.
 
 .DESCRIPTION
-    standalone  Core, Packet, Telemetry, Ingest, Cli, Schemas. Needs nothing but PowerShell 5.1+
+    standalone  Core, Packet, Telemetry, Ingest, Cli, Schemas, Integration. Needs nothing but PowerShell 5.1+
                 and OpenSSH ssh-keygen. This is the Tier-0 gate:
-                    WATCHTOWER_TIER0_FULL_GREEN_OK suites=6 cases=<n>
-    interop     Interop: conformance against live-state-surgeon output and the real CPR and
-                NeverLost code when their checkouts are available:
+                    WATCHTOWER_TIER0_FULL_GREEN_OK suites=7 cases=<n>
+    interop     Interop: conformance against live-state-surgeon output and the real CPR,
+                NeverLost, Arbiter and live-state-surgeon code when their checkouts are available:
                     WATCHTOWER_INTEROP_OK | WATCHTOWER_INTEROP_PARTIAL (some unavailable) | WATCHTOWER_INTEROP_FAIL
     all         both.
 
@@ -31,7 +31,7 @@ $module = Import-Module (Join-Path $repository 'src/WatchTower/WatchTower.psd1')
 $powershell = (Get-Process -Id $PID).Path
 
 $suites = New-Object System.Collections.Generic.List[string]
-if ($Scope -ne 'interop') { foreach ($s in @('Core', 'Packet', 'Telemetry', 'Ingest', 'Cli', 'Schemas')) { $suites.Add($s) } }
+if ($Scope -ne 'interop') { foreach ($s in @('Core', 'Packet', 'Telemetry', 'Ingest', 'Cli', 'Schemas', 'Integration')) { $suites.Add($s) } }
 if ($Scope -ne 'standalone') { $suites.Add('Interop') }
 
 function Get-RepositoryDigest {
@@ -73,7 +73,7 @@ foreach ($suite in $suites) {
     if ($final -match 'skipped=(\d+)') { $skipped = [int]$Matches[1] }
     $ok = ($exitCode -eq 0) -and ($final -match '^WATCHTOWER_[A-Z]+_TESTS_OK\b')
     foreach ($line in $lines) { if ($line -match '^CASE_(FAIL|SKIP):') { Write-Output ('  ' + $line) } }
-    Write-Output ('SUITE {0,-10} {1,-4} cases={2} skipped={3} seconds={4:0.0}' -f $suite, $(if ($ok) { 'OK' } else { 'FAIL' }), $cases, $skipped, $watch.Elapsed.TotalSeconds)
+    Write-Output ('SUITE {0,-11} {1,-4} cases={2} skipped={3} seconds={4:0.0}' -f $suite, $(if ($ok) { 'OK' } else { 'FAIL' }), $cases, $skipped, $watch.Elapsed.TotalSeconds)
     [void]$results.Add([ordered]@{ suite = $suite; ok = $ok; exit_code = $exitCode; cases = $cases; skipped = $skipped; token = $final })
 }
 $after = Get-RepositoryDigest

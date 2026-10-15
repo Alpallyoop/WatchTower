@@ -1,0 +1,84 @@
+{
+  "schema": "policy.rule_file.v1",
+  "rules": [
+    {
+      "schema": "policy.rule.v1",
+      "id": "R010_DENY_NAMESPACE_NOT_TRUSTED",
+      "description": "Defence in depth: the event namespace must be one the pinned trust bundle grants this producer.",
+      "when": {
+        "not": {
+          "in": [
+            "$.artifact.namespace",
+            "$.trust.allowed_namespaces"
+          ]
+        }
+      },
+      "effect": "deny",
+      "reasons": [
+        "DENY_NAMESPACE_NOT_TRUSTED"
+      ]
+    },
+    {
+      "schema": "policy.rule.v1",
+      "id": "R020_DENY_SIGNER_KEY_NOT_TRUSTED",
+      "description": "The signing key must be one of this producer's enrolled keys.",
+      "when": {
+        "not": {
+          "in": [
+            "$.artifact.signer.key_id",
+            "$.trust.allowed_key_ids"
+          ]
+        }
+      },
+      "effect": "deny",
+      "reasons": [
+        "DENY_SIGNER_KEY_NOT_TRUSTED"
+      ]
+    },
+    {
+      "schema": "policy.rule.v1",
+      "id": "R030_QUARANTINE_STALE_OBSERVATION",
+      "description": "Observations made 7 or more days before verification are held for an operator.",
+      "when": {
+        "gte_days": [
+          "$.artifact.created_at",
+          "$.env.now",
+          7
+        ]
+      },
+      "effect": "quarantine",
+      "reasons": [
+        "QUARANTINE_STALE_OBSERVATION"
+      ],
+      "obligations": [
+        {
+          "type": "route_to_quarantine",
+          "params": {
+            "queue": "stale-telemetry"
+          }
+        },
+        {
+          "type": "notify_operator",
+          "params": {
+            "channel": "watchtower"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "policy.rule.v1",
+      "id": "R900_ALLOW_VERIFIED_TELEMETRY",
+      "description": "Everything else WatchTower verified is accepted.",
+      "when": {
+        "in": [
+          "$.artifact.namespace",
+          "$.trust.allowed_namespaces"
+        ]
+      },
+      "effect": "allow",
+      "reasons": [
+        "ALLOW_VERIFIED_TELEMETRY"
+      ]
+    }
+  ]
+}

@@ -143,6 +143,8 @@ function Get-WtAlertsFor {
         if ($Verdict.SignerVerified) {
             $severity = 'warning'
             if (@('DUPLICATE_PACKET', 'REPLAYED_EVENT', 'SEQUENCE_REPLAYED', 'SEQUENCE_REGRESSION', 'TIME_REGRESSION', 'FUTURE_TIMESTAMP') -ccontains $Verdict.Code) { $severity = 'critical' }
+            # A policy gate that cannot decide holds back verified telemetry: an operator must act.
+            if ($script:WtPolicyFailureCodes -ccontains $Verdict.Code) { $severity = 'critical' }
             [void]$alerts.Add((New-WtAlert -Type 'TELEMETRY_REJECTED' -Severity $severity -State 'unknown' -ReasonCodes @($Verdict.Code)))
         }
         else {

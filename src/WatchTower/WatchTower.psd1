@@ -1,6 +1,6 @@
 @{
     RootModule           = 'WatchTower.psm1'
-    ModuleVersion        = '2.0.0'
+    ModuleVersion        = '2.1.0'
     GUID                 = 'c4604112-95b4-5143-80e3-804b378442c7'
     Author               = 'Alec Maiatico'
     CompanyName          = 'ScrappyHub'
@@ -11,11 +11,14 @@
     FunctionsToExport    = @(
         'Export-WtEvidenceIndex'
         'Get-WtTrust'
+        'Import-WtNeverLostProducer'
         'Initialize-WtTrust'
         'Invoke-WtDoctor'
         'Invoke-WtIngest'
         'New-WtPacket'
+        'Publish-WtIntegrationReceipts'
         'Register-WtProducer'
+        'Test-WtIntegrations'
         'Test-WtLedger'
         'Test-WtPacket'
         'Test-WtTelemetryPacket'
@@ -26,8 +29,8 @@
     PrivateData          = @{
         PSData = @{
             Tags         = @('Constellation', 'verifier', 'telemetry', 'PCv1', 'NeverLost', 'receipts')
-            ProjectUri   = 'https://github.com/ScrappyHub/WatchTower'
-            ReleaseNotes = 'v2.0.0: canonical verifier per the Constellation registry (see docs/canonical/SPEC.md).'
+            ProjectUri   = 'https://github.com/Alpallyoop/WatchTower'
+            ReleaseNotes = 'v2.1.0: Constellation integrations - integration receipts (proposal 0013), Arbiter policy gate, NeverLost v1 bundles, NFL handoff (see CHANGELOG.md).'
         }
     }
 }

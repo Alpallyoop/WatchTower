@@ -6,8 +6,10 @@ function Test-WtLedger {
         Recomputes every hash link of the receipt, alert, checkpoint and pledge chains, verifies
         every checkpoint and pledge signature against the pinned authority key, and checks the
         cross-links: each checkpoint seals the receipt and alert heads it names, and each pledge
-        binds an existing checkpoint and the receipt head at that point. Stored values are never
-        trusted without recomputation.
+        binds an existing checkpoint and the receipt head at that point. Also re-verifies every
+        integration receipt ledger (constellation.integration.receipt.v1), the NFL witness ledger
+        and the packets it names, and the policy-gate evidence behind each policy decision.
+        Stored values are never trusted without recomputation.
     .OUTPUTS
         PSCustomObject: Valid, Code, Detail, Ledgers, Warnings
     #>
@@ -17,7 +19,7 @@ function Test-WtLedger {
     $report = [pscustomobject]@{ Valid = $false; Code = ''; Detail = ''; Ledgers = $null; Warnings = (New-Object System.Collections.ArrayList) }
     try {
         $layout = Get-WtLayout $Root
-        $bundle = Read-WtTrustBundle $layout.TrustBundle
+        $bundle = Read-WtTrustBundle $layout.TrustBundle -Root $layout.Root
         $receipts = Open-WtHashChain -Path $layout.ReceiptLedger -HashField 'receipt_hash' -PrevField 'prev_receipt_hash'
         $alerts = Open-WtHashChain -Path $layout.AlertLedger -HashField 'alert_hash' -PrevField 'prev_alert_hash'
         $checkpoints = Open-WtHashChain -Path $layout.CheckpointLedger -HashField 'checkpoint_hash' -PrevField 'prev_checkpoint_hash'
@@ -60,9 +62,22 @@ function Test-WtLedger {
                 elseif (-not (Test-WtPacket $packetPath).Valid) { throw (New-WtFailure 'LEDGER_OUTBOX_PACKET_INVALID' $packetId) }
             }
         }
+        # Integration receipts (constellation.integration.receipt.v1) and their NFL witness ledger.
+        $integration = Test-WtIntegrationEvidence -Layout $layout -Warnings $report.Warnings -Bundle $bundle
+        # Policy gate evidence: every receipt that carries a policy decision links to an existing
+        # watchtower > arbiter integration receipt, and its input, decision and policy snapshot
+        # still reproduce the recorded hashes.
+        $arbiterHashes = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([System.StringComparer]::Ordinal)
+        $arbiter = Read-WtIntegrationLedger (Get-WtIntegrationLedgerPath -Layout $layout -Provider 'arbiter')
+        for ($i = 0; $i -lt $arbiter.Count; $i++) { $arbiterHashes[[string]$arbiter.Hashes[$i]] = $arbiter.Rows[$i] }
+        foreach ($row in $receipts.Rows) {
+            if (-not $row.Contains('policy_decision')) { continue }
+            Test-WtPolicyEvidence -Layout $layout -Row $row -ArbiterHashes $arbiterHashes -Warnings $report.Warnings
+        }
         $summary = { param($Chain) [pscustomobject]@{ Count = $Chain.Count; Head = $Chain.Head } }
         $report.Ledgers = [pscustomobject]@{
             Receipts = & $summary $receipts; Alerts = & $summary $alerts; Checkpoints = & $summary $checkpoints; Pledges = & $summary $pledges
+            Integrations = $integration.Integrations; IntegrationWitness = $integration.Witness
         }
         $report.Valid = $true
         $report.Code = 'OK'

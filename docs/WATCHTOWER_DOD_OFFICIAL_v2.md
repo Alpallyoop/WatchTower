@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Document | `WATCHTOWER_DOD_OFFICIAL_v2` — supersedes `docs/history/WATCHTOWER_DOD_OFFICIAL_v1.md` |
-| Date | 2026-10-13 |
+| Date | 2026-10-13, statuses updated 2026-10-15 (module 2.1.0) |
 | Scope | WatchTower as deterministic verifier and telemetry receipt authority |
 
 ## 0. Governing law (unchanged from v1)
@@ -46,11 +46,14 @@ Tier-0 is done when D1–D15 are ✅.
 
 | DoD | Criterion | Status |
 |---|---|---|
-| I1 | A packet emitted by live-state-surgeon's own code is accepted end to end | 🔴 (proposal 0002) |
-| I2 | live-state-surgeon materializes from WatchTower's receipt ledger, after re-verifying it | 🔴 (proposal 0002) |
-| I3 | NFL witnesses a WatchTower outbox packet and its receipt is recorded | 🟡 (CPR accepts) |
+| I1 | A packet emitted by live-state-surgeon's own code is accepted end to end | ✅ (Integration, Interop) |
+| I2 | live-state-surgeon materializes from WatchTower's receipt ledger, after re-verifying it | 🟡 (LSS-side selftest; not re-run here) |
+| I3 | NFL witnesses a WatchTower outbox packet and its receipt is recorded | 🟡 (CPR accepts; NFL commits no hash yet) |
 | I4 | Constellation oversight reports a service's health from a WatchTower facet | 🟡 (shape verified) |
-| I5 | Registry entries describe v2 outputs and a service-map receipt is recorded | 🔴 (proposal 0003) |
+| I5 | Registry entries describe v2 outputs and a service-map receipt is recorded | 🔴 (proposal 0007) |
+| I6 | Every exchange WatchTower consumes writes a `constellation.integration.receipt.v1`, failed ones included, handed to NFL | ✅ (Integration) |
+| I7 | The policy gate routes on Arbiter's real decisions, fails closed, and every decision re-proves with `arbiter verify` | ✅ (Integration, Interop) |
+| I8 | WatchTower's trust bundle passes NeverLost's fail-closed v1 verifier | ✅ (Interop, NeverLost `3de2ecb`) |
 
 ## 3. Standing quality gates (every change)
 
@@ -65,7 +68,7 @@ Tier-0 is done when D1–D15 are ✅.
 
 ## 4. Freeze and seal
 
-1. Tier-0 D1–D15 ✅ and I1 ✅.
+1. Tier-0 D1–D15 ✅ and I1 ✅ (I1 done).
 2. A freeze bundle `proofs/freeze/watchtower_v2_<timestamp>/` holding the CI reports
    (`watchtower.test_run.v1`) from all three hosts, the Windows host transcript, `sha256sums.txt`
    and the commit id.

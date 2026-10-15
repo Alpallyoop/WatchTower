@@ -4,7 +4,8 @@ function Invoke-WtDoctor {
         Self-check of this WatchTower node; optionally publishes its own health report.
     .DESCRIPTION
         Checks settings, the trust bundle and derived allowed_signers, the authority key, all
-        ledgers (Test-WtLedger), a stale ingest lock and the inbox backlog. With -Publish it
+        ledgers (Test-WtLedger, including integration receipts), the policy gate when one is
+        configured (Arbiter found, policy readable), a stale ingest lock and the inbox backlog. With -Publish it
         writes runtime/doctor_report.json and a signed watchtower.health_report.v1 for the
         'watchtower' service under runtime/services/watchtower/, which is what Constellation's
         health facet reads for WatchTower itself ("WatchTower status ... doctor result").
@@ -31,7 +32,7 @@ function Invoke-WtDoctor {
     }
     & $run 'ssh_keygen' { 'SSHSIG sign/verify works: ' + [System.IO.Path]::GetFileName((Test-WtSshSigSupport)) }
     & $run 'settings' { [void](Read-WtSettings $layout); 'valid' }
-    & $run 'trust_bundle' { $context.Bundle = Read-WtTrustBundle $layout.TrustBundle; 'valid' }
+    & $run 'trust_bundle' { $context.Bundle = Read-WtTrustBundle $layout.TrustBundle -Root $layout.Root; 'valid' }
     & $run 'allowed_signers_derived' {
         if ($null -eq $context.Bundle) { throw (New-WtFailure 'TRUST_BUNDLE_UNAVAILABLE') }
         if (-not [System.IO.File]::Exists($layout.AllowedSigners) -or (Read-WtText $layout.AllowedSigners) -cne (ConvertTo-WtAllowedSigners $context.Bundle)) { throw (New-WtFailure 'ALLOWED_SIGNERS_NOT_DERIVED') }
@@ -45,7 +46,18 @@ function Invoke-WtDoctor {
     & $run 'ledgers' {
         $ledger = Test-WtLedger -Root $layout.Root
         if (-not $ledger.Valid) { throw (New-WtFailure $ledger.Code $ledger.Detail) }
-        'receipts={0} alerts={1} checkpoints={2} pledges={3} warnings={4}' -f $ledger.Ledgers.Receipts.Count, $ledger.Ledgers.Alerts.Count, $ledger.Ledgers.Checkpoints.Count, $ledger.Ledgers.Pledges.Count, $ledger.Warnings.Count
+        $integrationCount = [long](@($ledger.Ledgers.Integrations | ForEach-Object { $_.Count }) | Measure-Object -Sum).Sum
+        'receipts={0} alerts={1} checkpoints={2} pledges={3} integration_receipts={4} warnings={5}' -f $ledger.Ledgers.Receipts.Count, $ledger.Ledgers.Alerts.Count, $ledger.Ledgers.Checkpoints.Count, $ledger.Ledgers.Pledges.Count, $integrationCount, $ledger.Warnings.Count
+    }
+    & $run 'policy_gate' {
+        $settings = Read-WtSettings $layout
+        $gate = Read-WtPolicyGate -Layout $layout -Settings $settings -ReadOnly
+        if ($null -eq $gate) { 'off (no settings.arbiter)' }
+        else {
+            if ($gate.Error) { throw (New-WtFailure 'POLICY_SET_INVALID' $gate.Error) }
+            if (-not $gate.Engine) { throw (New-WtFailure 'POLICY_EVALUATOR_UNAVAILABLE' 'set WATCHTOWER_ARBITER_ROOT or place an arbiter checkout beside this repository') }
+            'arbiter ready, policy ' + $gate.PolicyHash
+        }
     }
     & $run 'ingest_lock' {
         if ([System.IO.File]::Exists([System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($layout.LastIngest), 'ingest.lock'))) { throw (New-WtFailure 'INGEST_LOCK_PRESENT' 'runtime/ingest.lock') }

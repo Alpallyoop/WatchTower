@@ -30,6 +30,38 @@
     "receipt_time": {
       "type": "string",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "policy_decision": {
+      "enum": [
+        "deny",
+        "quarantine"
+      ],
+      "description": "Present when the policy gate rejected the packet."
+    },
+    "policy_decision_hash": {
+      "type": "string",
+      "pattern": "^(|sha256:[0-9a-f]{64})$"
+    },
+    "obligations": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "params": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Arbiter's obligations for a quarantine decision, recorded for the operator; WatchTower routes to quarantine and raises the alert, other obligation types are not executed."
     }
   },
   "additionalProperties": false

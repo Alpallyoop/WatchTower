@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 
 $private = @(
     'Errors', 'IO', 'Json', 'Paths', 'Native', 'Trust', 'HashChain',
-    'Constants', 'Layout', 'Authority', 'TelemetryRules', 'IngestRules', 'Evidence', 'Outbound'
+    'Constants', 'Layout', 'Authority', 'TelemetryRules', 'IngestRules', 'Evidence', 'Outbound', 'Integration', 'PolicyGate'
 )
 foreach ($name in $private) { . (Join-Path $PSScriptRoot ('Private/{0}.ps1' -f $name)) }
 foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'Public') -Filter '*.ps1' | Sort-Object Name)) { . $file.FullName }

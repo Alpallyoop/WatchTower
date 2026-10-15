@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ScrappyHub/WatchTower/schemas/watchtower.integration_witness_record.v1.json",
+  "title": "Integration witness ledger row",
+  "description": "One row of proofs/integrations/watchtower.integration_witness_record.v1.ndjson per witness packet, hash-chained like every WatchTower ledger (witness_hash over the row without witness_hash + LF; prev_witness_hash GENESIS first). Ranges are contiguous per integration; Test-WtLedger re-checks every head and the packet content.",
+  "type": "object",
+  "required": [
+    "schema",
+    "witness_time",
+    "verifier",
+    "node_id",
+    "outbox_packet_id",
+    "ledgers",
+    "prev_witness_hash",
+    "witness_hash"
+  ],
+  "properties": {
+    "schema": {
+      "const": "watchtower.integration_witness_record.v1"
+    },
+    "witness_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "verifier": {
+      "const": "single-tenant/watchtower_authority/authority/watchtower"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "outbox_packet_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ledgers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "integration",
+          "first_index",
+          "last_index",
+          "head_sha256"
+        ],
+        "properties": {
+          "integration": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*>[a-z0-9][a-z0-9-]*$"
+          },
+          "first_index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "last_index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "head_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "prev_witness_hash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$"
+    },
+    "witness_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}
