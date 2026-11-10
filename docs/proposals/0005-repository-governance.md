@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Open; each item is an owner decision, none is made by this change |
+| Status | Items 1 and 2 decided 2026-11-04; items 3-6 open (Constellation proposal 0047) |
 | Date | 2026-10-13 |
 
 ## 1. Default branch
@@ -60,3 +60,9 @@ to the local UI origin there.
   `_devenv\` next to themselves, but `_devenv` now lives under `Constellation/Constellation-Network/`.
 - **Originals on C:.** The former Local AppData folders and the old C: working copy still exist
   (C: is read-only). Remove them once the S: copy has been used successfully.
+
+## Owner decision (2026-11-04)
+
+1. Default branch: `master` becomes the default and `main` is archived as the tag `archive/main-2026-11-04` (the owner switches the GitHub setting; an assistant cannot change repository settings). 2. Licence: MIT (`LICENSE` added, copyright the owner). Items 3-6 are unchanged.
+
+Recorded in Constellation proposal 0047 (owner decisions 2026-11-04).

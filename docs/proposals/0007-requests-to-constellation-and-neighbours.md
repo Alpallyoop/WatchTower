@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Proposed. Each item belongs to the owner of the named repository; nothing here was changed outside WatchTower |
+| Status | Applied 2026-11-04 in Constellation registry 2.36.0 (receipt states wait for receipts) (Constellation proposal 0047) |
 | Date | 2026-10-15 |
 | Supersedes | the open rows of proposal 0003 (registry entries), which this restates against registry 2.16.0 |
 
@@ -79,3 +79,9 @@ Then republish the service map and record a service-map receipt.
 
 - Publish `covenantgate.effective_policy.v1`. WatchTower's policy-attestation rule recomputes the
   policy hash over the four fields LSS sends; the schema itself is still unowned.
+
+## Owner decision (2026-11-04)
+
+Applied: watchtower > arbiter strong/high; watchtower > clarity removed; nfl > watchtower and live-state-surgeon / global-workbench > watchtower contracts; claim-protocol and soteriavault > watchtower unverified; WatchTower upstream/downstream, families and owns. Not applied yet: moving watchtower > arbiter, > neverlost and > nfl to emitting. Constellation promotes a record when a receipt exists at `proofs/integration_receipts/<consumer>__<provider>/receipts.ndjson` or `proofs/receipts/integration/<consumer>__<provider>.ndjson`; none was there on 2026-11-04.
+
+Recorded in Constellation proposal 0047 (owner decisions 2026-11-04).
